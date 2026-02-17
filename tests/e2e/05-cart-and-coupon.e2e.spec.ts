@@ -22,6 +22,19 @@ test.describe('CART :: UI Cart And Coupon', () => {
         await cartPage.assertDiscountVisible();
       }
     );
+
+    test(
+      'CART-P02: user can remove applied coupon from cart @e2e @regression @safe',
+      async ({ cartPage, productPage }) => {
+        await productPage.gotoProduct(products.apple.id);
+        await productPage.addToCart();
+
+        await cartPage.applyCoupon(coupons.valid);
+        await cartPage.assertCouponApplied(coupons.valid);
+        await cartPage.removeCouponIfVisible();
+        await cartPage.assertCouponRemoved();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -33,6 +46,17 @@ test.describe('CART :: UI Cart And Coupon', () => {
 
         await cartPage.applyCoupon(coupons.invalid);
         await cartPage.assertErrorContains('Invalid coupon code');
+      }
+    );
+
+    test(
+      'CART-N02: expired coupon code is rejected with expiry message @e2e @regression @safe',
+      async ({ cartPage, productPage }) => {
+        await productPage.gotoProduct(products.apple.id);
+        await productPage.addToCart();
+
+        await cartPage.applyCoupon(coupons.expired);
+        await cartPage.assertErrorContains('Coupon has expired');
       }
     );
   });

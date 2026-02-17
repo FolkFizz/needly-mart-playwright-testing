@@ -10,6 +10,14 @@ test.describe('AUTH :: A11y', () => {
         await a11yAudit.assertNoCriticalOrSerious();
       }
     );
+
+    test(
+      'AUTH-P02: register page has no critical or serious accessibility violations @a11y @regression @safe',
+      async ({ authPage, a11yAudit }) => {
+        await authPage.gotoRegister();
+        await a11yAudit.assertNoCriticalOrSerious();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -19,6 +27,15 @@ test.describe('AUTH :: A11y', () => {
         await authPage.gotoLogin();
         await authPage.login(accounts.primary.username, 'invalid_password_!');
         await authPage.assertLoginErrorVisible();
+        await a11yAudit.assertNoCriticalOrSerious();
+      }
+    );
+
+    test(
+      'AUTH-N02: forgot-password validation state remains accessible when email is missing @a11y @regression @safe',
+      async ({ authPage, a11yAudit }) => {
+        await authPage.gotoForgotPassword();
+        await authPage.submitForgotPassword('');
         await a11yAudit.assertNoCriticalOrSerious();
       }
     );

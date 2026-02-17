@@ -17,6 +17,17 @@ test.describe('PLATFORM :: Security Behavior', () => {
         }
       }
     );
+
+    test(
+      'PLATFORM-P02: health endpoint is publicly reachable and returns ok payload @security @regression @safe',
+      async ({ healthApi }) => {
+        const response = await healthApi.liveness();
+        expect(response.status()).toBe(200);
+
+        const body = await response.json();
+        expect(body.ok).toBe(true);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -30,6 +41,17 @@ test.describe('PLATFORM :: Security Behavior', () => {
 
         const html = await response.text();
         expect(html).toContain('data-testid="login-page"');
+      }
+    );
+
+    test(
+      'PLATFORM-N02: cart api route rejects unauthenticated requests @security @regression @safe',
+      async ({ request }) => {
+        const response = await request.post('/api/cart/add', {
+          data: { productId: 1, quantity: 1 },
+          headers: { Accept: 'application/json' }
+        });
+        expect(response.status()).toBe(401);
       }
     );
   });

@@ -16,6 +16,15 @@ test.describe('REGISTER :: API Account Registration', () => {
         expect(body.user.username).toBe(account.username);
       }
     );
+
+    test(
+      'REGISTER-P02: api register can be followed by login with the new account @api @regression @destructive',
+      async ({ authApi }) => {
+        const account = buildUniqueAccount('api_register_login');
+        expect((await authApi.register(account.username, account.email, account.password)).status()).toBe(201);
+        expect((await authApi.login(account.username, account.password)).status()).toBe(200);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -31,6 +40,18 @@ test.describe('REGISTER :: API Account Registration', () => {
 
         const body = await response.json();
         expect(body.ok).toBe(false);
+      }
+    );
+
+    test(
+      'REGISTER-N02: api register with missing required fields is rejected @api @regression @safe',
+      async ({ authApi }) => {
+        const response = await authApi.register('', '', '');
+        expect(response.status()).toBe(400);
+
+        const body = await response.json();
+        expect(body.ok).toBe(false);
+        expect(String(body.message || '')).toContain('All fields are required');
       }
     );
   });

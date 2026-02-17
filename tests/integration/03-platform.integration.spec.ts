@@ -22,6 +22,20 @@ test.describe('PLATFORM :: Integration (Auth + Cart + Order + Health)', () => {
         expect(meBody.user.username).toBe(runtime.user.username);
       }
     );
+
+    test(
+      'PLATFORM-P02: db readiness endpoint returns structured status after cart activity @integration @regression @safe',
+      async ({ cartApi, healthApi }) => {
+        expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
+
+        const response = await healthApi.readinessDb();
+        expect([200, 500]).toContain(response.status());
+
+        const body = await response.json();
+        expect(typeof body.ok).toBe('boolean');
+        expect(['up', 'down']).toContain(String(body.db));
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -37,6 +51,15 @@ test.describe('PLATFORM :: Integration (Auth + Cart + Order + Health)', () => {
 
         const body = await response.json();
         expect(body.ok).toBe(false);
+      }
+    );
+
+    test(
+      'PLATFORM-N02: cart api rejects add-item request after logout @integration @regression @safe',
+      async ({ authApi, cartApi }) => {
+        expect((await authApi.logout()).status()).toBe(200);
+        const response = await cartApi.add(products.apple.id, 1);
+        expect(response.status()).toBe(401);
       }
     );
   });

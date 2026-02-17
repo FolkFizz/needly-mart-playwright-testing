@@ -25,6 +25,21 @@ test.describe('CART :: API Cart And Coupon', () => {
         expect(Number(body.discountPercent)).toBe(20);
       }
     );
+
+    test(
+      'CART-P02: update item quantity reflects in cart payload @api @regression @safe',
+      async ({ cartApi }) => {
+        expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
+        const updateResponse = await cartApi.updateItem(products.apple.id, 3);
+        expect(updateResponse.status()).toBe(200);
+
+        const cartResponse = await cartApi.get();
+        const body = await cartResponse.json();
+        const item = (body.cart || []).find((row: { id: number }) => Number(row.id) === products.apple.id);
+        expect(item).toBeTruthy();
+        expect(Number(item.quantity)).toBe(3);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -35,6 +50,19 @@ test.describe('CART :: API Cart And Coupon', () => {
 
         const response = await cartApi.applyCoupon(coupons.invalid);
         expect(response.status()).toBe(404);
+
+        const body = await response.json();
+        expect(body.ok).toBe(false);
+      }
+    );
+
+    test(
+      'CART-N02: expired coupon code is rejected @api @regression @safe',
+      async ({ cartApi }) => {
+        expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
+
+        const response = await cartApi.applyCoupon(coupons.expired);
+        expect(response.status()).toBe(400);
 
         const body = await response.json();
         expect(body.ok).toBe(false);

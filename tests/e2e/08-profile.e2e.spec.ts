@@ -21,6 +21,15 @@ test.describe('PROFILE :: UI Profile Management', () => {
         await profilePage.assertSuccessContains('Profile updated');
       }
     );
+
+    test(
+      'PROFILE-P02: user can navigate profile tabs without breaking layout @e2e @regression @safe',
+      async ({ profilePage }) => {
+        await profilePage.openOrdersTab();
+        await profilePage.openClaimsTab();
+        await profilePage.openInfoTab();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -29,6 +38,15 @@ test.describe('PROFILE :: UI Profile Management', () => {
       async ({ profilePage }) => {
         await profilePage.updateProfile('qauser@needlymart.com', 'Duplicate Email Address Check', '0811111111');
         await profilePage.assertErrorContains('Email is already in use');
+      }
+    );
+
+    test(
+      'PROFILE-N02: unauthenticated user cannot access profile page @e2e @regression @safe',
+      async ({ authPage, page }) => {
+        await authPage.logout();
+        await page.goto('/profile?tab=info');
+        await authPage.assertLoginPageVisible();
       }
     );
   });

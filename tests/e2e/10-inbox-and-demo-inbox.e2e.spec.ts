@@ -21,6 +21,19 @@ test.describe('INBOX :: UI Inbox And Demo Inbox', () => {
         await inboxPage.assertDetailBodyContains('/reset-password/');
       }
     );
+
+    test(
+      'INBOX-P02: forgot-password success view can open demo inbox link @e2e @regression @safe',
+      async ({ authPage, inboxPage }) => {
+        await authPage.gotoForgotPassword();
+        await authPage.submitForgotPassword(runtime.user.email);
+        await authPage.assertForgotPasswordSuccessVisible();
+        await authPage.assertForgotPasswordDemoInboxLinkVisible();
+
+        await authPage.openDemoInboxFromForgotPassword();
+        await inboxPage.openInboxTab();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -28,6 +41,14 @@ test.describe('INBOX :: UI Inbox And Demo Inbox', () => {
       'INBOX-N01: unauthenticated user is redirected from private inbox to login @e2e @regression @safe',
       async ({ authPage, page }) => {
         await page.goto('/inbox');
+        await authPage.assertLoginPageVisible();
+      }
+    );
+
+    test(
+      'INBOX-N02: unauthenticated user is redirected from private inbox detail to login @e2e @regression @safe',
+      async ({ authPage, page }) => {
+        await page.goto('/inbox/1');
         await authPage.assertLoginPageVisible();
       }
     );

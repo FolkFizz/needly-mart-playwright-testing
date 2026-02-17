@@ -40,6 +40,17 @@ test.describe('ORDER :: UI Order History And Invoice', () => {
         expect(await invoicePage.readGrandTotal()).toBeGreaterThan(0);
       }
     );
+
+    test(
+      'ORDER-P02: user can open invoice from profile order history tab @e2e @regression @destructive',
+      async ({ profilePage, invoicePage }) => {
+        await profilePage.gotoProfile('orders');
+        await profilePage.assertOrderCardVisible(orderId);
+        await profilePage.openInvoiceForOrder(orderId);
+        await invoicePage.assertPageVisible();
+        await invoicePage.assertOrderIdContains(orderId);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -48,6 +59,15 @@ test.describe('ORDER :: UI Order History And Invoice', () => {
       async ({ authPage, page }) => {
         await authPage.logout();
         await page.goto(ROUTE.invoice(orderId));
+        await authPage.assertLoginPageVisible();
+      }
+    );
+
+    test(
+      'ORDER-N02: profile order history is inaccessible after logout @e2e @regression @safe',
+      async ({ authPage, page }) => {
+        await authPage.logout();
+        await page.goto('/profile?tab=orders');
         await authPage.assertLoginPageVisible();
       }
     );

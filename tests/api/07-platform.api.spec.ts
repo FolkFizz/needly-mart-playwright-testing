@@ -28,6 +28,17 @@ test.describe('PLATFORM :: API Health And Test Hooks', () => {
         expect(String(body.message || '')).not.toBe('');
       }
     );
+
+    test(
+      'PLATFORM-N02: test seed endpoint is blocked without test api key @api @regression @safe',
+      async ({ testHooksApi }) => {
+        const response = await testHooksApi.seed();
+        expect(response.status()).toBe(403);
+
+        const body = await response.json().catch(() => ({}));
+        expect(String(body.message || '')).not.toBe('');
+      }
+    );
   });
 
   test.describe('edge cases', () => {

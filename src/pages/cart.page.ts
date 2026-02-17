@@ -39,6 +39,10 @@ export class CartPage {
     await expect(this.page.getByTestId(TEST_ID.cart.couponCode)).toHaveText(code);
   }
 
+  async assertCouponRemoved() {
+    await expect(this.page.getByTestId(TEST_ID.cart.couponCode)).toHaveCount(0);
+  }
+
   async assertDiscountVisible() {
     await expect(this.page.getByTestId(TEST_ID.cart.discountRow)).toBeVisible();
   }

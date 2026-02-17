@@ -15,6 +15,14 @@ test.describe('CATALOG :: UI Browse And Search', () => {
         await productPage.assertTitleEquals(products.apple.name);
       }
     );
+
+    test(
+      'CATALOG-P02: category filter returns products in selected category @e2e @regression @safe',
+      async ({ catalogPage }) => {
+        await catalogPage.selectCategory(products.bambooSpatula.category);
+        await catalogPage.assertProductCardVisible(products.bambooSpatula.id);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -22,6 +30,14 @@ test.describe('CATALOG :: UI Browse And Search', () => {
       'CATALOG-N01: no result search shows empty state @e2e @regression @safe',
       async ({ catalogPage }) => {
         await catalogPage.search('product-that-does-not-exist-qa-check');
+        await catalogPage.assertEmptyStateVisible();
+      }
+    );
+
+    test(
+      'CATALOG-N02: invalid price range with min greater than max shows empty state @e2e @regression @safe',
+      async ({ catalogPage }) => {
+        await catalogPage.setPriceRange('1000', '10');
         await catalogPage.assertEmptyStateVisible();
       }
     );

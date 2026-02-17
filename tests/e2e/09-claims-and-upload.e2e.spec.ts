@@ -25,6 +25,19 @@ test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
         await profilePage.assertClaimCardVisible(Number(claimId));
       }
     );
+
+    test(
+      'CLAIMS-P02: user can submit claim without image evidence @e2e @regression @destructive',
+      async ({ claimPage, profilePage }) => {
+        await claimPage.gotoClaim();
+        await claimPage.submitClaim(buildInvoiceId(), 'Claim without image attachment');
+
+        await profilePage.openClaimsTab();
+        const claimId = await profilePage.readFirstClaimId();
+        expect(claimId).not.toBeNull();
+        await profilePage.assertClaimCardVisible(Number(claimId));
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -37,6 +50,15 @@ test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
         await claimPage.uploadInvalidEvidenceFile();
         await claimPage.submit();
         await claimPage.assertErrorContains('Only image files are allowed');
+      }
+    );
+
+    test(
+      'CLAIMS-N02: claim submit without description is rejected @e2e @regression @safe',
+      async ({ claimPage }) => {
+        await claimPage.gotoClaim();
+        await claimPage.submitClaim(buildInvoiceId(), '');
+        await claimPage.assertErrorContains('Invoice ID and description are required');
       }
     );
   });

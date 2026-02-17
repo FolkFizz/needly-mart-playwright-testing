@@ -15,6 +15,18 @@ test.describe('CATALOG :: API Product Discovery', () => {
         expect(body.products.length).toBeGreaterThan(0);
       }
     );
+
+    test(
+      'CATALOG-P02: search by known keyword returns matching product @api @regression @safe',
+      async ({ productsApi }) => {
+        const response = await productsApi.list({ q: products.apple.name });
+        expect(response.status()).toBe(200);
+
+        const body = await response.json();
+        expect(body.ok).toBe(true);
+        expect(body.products.some((item: { name: string }) => item.name === products.apple.name)).toBeTruthy();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -41,6 +53,19 @@ test.describe('CATALOG :: API Product Discovery', () => {
         expect(body.ok).toBe(true);
         expect(Array.isArray(body.products)).toBe(true);
         expect(body.products.some((item: { name: string }) => item.name === products.apple.name)).toBeTruthy();
+      }
+    );
+
+    test(
+      'CATALOG-E02: unknown category returns empty list with success response @api @regression @safe',
+      async ({ productsApi }) => {
+        const response = await productsApi.list({ category: 'qa-no-such-category' });
+        expect(response.status()).toBe(200);
+
+        const body = await response.json();
+        expect(body.ok).toBe(true);
+        expect(Array.isArray(body.products)).toBe(true);
+        expect(body.products.length).toBe(0);
       }
     );
   });

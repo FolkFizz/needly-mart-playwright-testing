@@ -17,6 +17,23 @@ test.describe('PASSWORD RESET :: Integration (Auth API + Demo Inbox)', () => {
         expect(body.tokenValid).toBe(true);
       }
     );
+
+    test(
+      'RESET-P02: token becomes invalid after successful password reset @integration @regression @destructive',
+      async ({ authApi, demoInboxApi }) => {
+        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        const token = await demoInboxApi.readLatestResetToken();
+
+        expect((await authApi.resetPassword(token, runtime.user.newPassword)).status()).toBe(200);
+        const validateAfterUse = await authApi.validateResetToken(token);
+        expect([400, 500]).toContain(validateAfterUse.status());
+
+        // Cleanup: restore initial password with a fresh token.
+        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        const restoreToken = await demoInboxApi.readLatestResetToken();
+        expect((await authApi.resetPassword(restoreToken, runtime.user.password)).status()).toBe(200);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -25,6 +42,17 @@ test.describe('PASSWORD RESET :: Integration (Auth API + Demo Inbox)', () => {
       async ({ authApi }) => {
         const response = await authApi.resetPassword('invalid-reset-token', runtime.user.newPassword);
         expect([400, 500]).toContain(response.status());
+
+        const body = await response.json();
+        expect(body.ok).toBe(false);
+      }
+    );
+
+    test(
+      'RESET-N02: forgot-password requires email input @integration @regression @safe',
+      async ({ authApi }) => {
+        const response = await authApi.forgotPassword('');
+        expect(response.status()).toBe(400);
 
         const body = await response.json();
         expect(body.ok).toBe(false);

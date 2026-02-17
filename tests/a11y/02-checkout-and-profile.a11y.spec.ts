@@ -24,6 +24,14 @@ test.describe('CHECKOUT-PROFILE :: A11y', () => {
         await a11yAudit.assertNoCriticalOrSerious();
       }
     );
+
+    test(
+      'CHECKOUTA11Y-P02: profile info tab has no critical or serious violations @a11y @regression @safe',
+      async ({ profilePage, a11yAudit }) => {
+        await profilePage.gotoProfile('info');
+        await a11yAudit.assertNoCriticalOrSerious();
+      }
+    );
   });
 
   test.describe('negative cases', () => {

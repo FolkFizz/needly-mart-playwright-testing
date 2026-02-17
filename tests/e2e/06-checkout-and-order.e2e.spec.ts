@@ -33,6 +33,7 @@ test.describe('CHECKOUT :: UI Checkout And Order Placement', () => {
         await orderSuccessPage.assertOrderIdVisible();
       }
     );
+
   });
 
   test.describe('negative cases', () => {
@@ -46,6 +47,17 @@ test.describe('CHECKOUT :: UI Checkout And Order Placement', () => {
         await checkoutPage.assertPaymentStatusContains('Card was declined');
       }
     );
+
+    test(
+      'CHECKOUT-N02: insufficient-funds card prevents order placement @e2e @regression @safe',
+      async ({ checkoutPage }) => {
+        await checkoutPage.fillContact(checkoutForm.valid);
+        await checkoutPage.fillCard(testCards.insufficientFunds);
+        await checkoutPage.assertPayButtonEnabled();
+        await checkoutPage.clickPayNow();
+        await checkoutPage.assertPaymentStatusContains('Insufficient funds');
+      }
+    );
   });
 
   test.describe('edge cases', () => {
@@ -56,6 +68,17 @@ test.describe('CHECKOUT :: UI Checkout And Order Placement', () => {
         await checkoutPage.fillCard(testCards.approved);
         await checkoutPage.assertPayButtonEnabled();
         await checkoutPage.clearAddress();
+        await checkoutPage.assertPayButtonDisabled();
+      }
+    );
+
+    test(
+      'CHECKOUT-E02: pay button stays disabled when email field becomes empty @e2e @regression @safe',
+      async ({ checkoutPage }) => {
+        await checkoutPage.fillContact(checkoutForm.valid);
+        await checkoutPage.fillCard(testCards.approved);
+        await checkoutPage.assertPayButtonEnabled();
+        await checkoutPage.clearEmail();
         await checkoutPage.assertPayButtonDisabled();
       }
     );

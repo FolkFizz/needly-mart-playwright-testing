@@ -18,6 +18,15 @@ test.describe('PRODUCT :: UI Product Detail', () => {
         await cartPage.assertItemRowVisible(products.apple.id);
       }
     );
+
+    test(
+      'PRODUCT-P02: product detail shows current stock information @e2e @regression @safe',
+      async ({ productPage }) => {
+        await productPage.gotoProduct(products.apple.id);
+        const stockText = await productPage.readStockText();
+        expect(stockText).toContain('Stock:');
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -44,6 +53,21 @@ test.describe('PRODUCT :: UI Product Detail', () => {
         await productPage.setQuantity(boundedStock);
         await productPage.addToCart();
         await cartPage.assertItemRowVisible(products.apple.id);
+      }
+    );
+
+    test(
+      'PRODUCT-E02: adding quantity above stock is blocked with cart error @e2e @regression @safe',
+      async ({ productPage, cartPage }) => {
+        await productPage.gotoProduct(products.apple.id);
+        const stockText = await productPage.readStockText();
+        const stockMatch = stockText.match(/(\d+)/);
+        const stock = Number.parseInt(String(stockMatch?.[1] || '1'), 10);
+        const overLimitQty = (Number.isFinite(stock) ? stock : 1) + 1;
+
+        await productPage.setQuantity(overLimitQty);
+        await productPage.addToCart();
+        await cartPage.assertErrorContains('Stock limit reached');
       }
     );
   });

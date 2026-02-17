@@ -14,6 +14,13 @@ test.describe('AUTH :: UI Login Flow', () => {
         await authPage.assertLoggedInUiVisible();
       }
     );
+
+    test(
+      'AUTH-P02: user can navigate from login page to forgot-password page @e2e @regression @safe',
+      async ({ authPage }) => {
+        await authPage.openForgotPassword();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -21,6 +28,14 @@ test.describe('AUTH :: UI Login Flow', () => {
       'AUTH-N01: login with invalid password shows error @e2e @regression @safe',
       async ({ authPage }) => {
         await authPage.login(accounts.invalid.username, accounts.invalid.password);
+        await authPage.assertLoginErrorContains('Invalid username or password');
+      }
+    );
+
+    test(
+      'AUTH-N02: login with unknown username is rejected @e2e @regression @safe',
+      async ({ authPage }) => {
+        await authPage.login('unknown_user_for_login_check', accounts.primary.password);
         await authPage.assertLoginErrorContains('Invalid username or password');
       }
     );

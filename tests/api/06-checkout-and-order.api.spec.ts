@@ -57,6 +57,18 @@ test.describe('CHECKOUT :: API Payment Authorization And Order Placement', () =>
         expect(String(body.message || '')).toContain('Payment is not authorized');
       }
     );
+
+    test(
+      'CHECKOUT-N02: declined card is rejected at authorization endpoint @api @regression @safe',
+      async ({ ordersApi }) => {
+        const response = await ordersApi.authorizeMockPayment(testCards.declined);
+        expect(response.status()).toBe(402);
+
+        const body = await response.json();
+        expect(body.ok).toBe(false);
+        expect(body.status).toBe('declined');
+      }
+    );
   });
 
   test.describe('edge cases', () => {
@@ -70,6 +82,26 @@ test.describe('CHECKOUT :: API Payment Authorization And Order Placement', () =>
         expect(body.ok).toBe(false);
         expect(body.status).toBe('invalid_expiry');
         expect(String(body.message || '')).toContain('expired');
+      }
+    );
+
+    test(
+      'CHECKOUT-E02: authorized payment token cannot place order when address is missing @api @regression @safe',
+      async ({ ordersApi }) => {
+        const authorizeResponse = await ordersApi.authorizeMockPayment(testCards.approved);
+        expect(authorizeResponse.status()).toBe(200);
+        const authorizeBody = await authorizeResponse.json();
+
+        const response = await ordersApi.placeMockOrder({
+          paymentToken: String(authorizeBody.token),
+          name: checkoutForm.valid.name,
+          email: checkoutForm.valid.email,
+          address: ''
+        });
+        expect(response.status()).toBe(400);
+
+        const body = await response.json();
+        expect(body.ok).toBe(false);
       }
     );
   });

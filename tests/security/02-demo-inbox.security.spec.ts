@@ -14,6 +14,21 @@ test.describe('DEMO-INBOX :: Security Exposure Baseline', () => {
         expect(html).toContain('data-testid="inbox-page"');
       }
     );
+
+    test(
+      'DEMOINBOX-P02: demo inbox detail publicly exposes reset email content @security @regression @safe',
+      async ({ authApi, demoInboxApi }) => {
+        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+
+        const listResponse = await demoInboxApi.list();
+        const emailId = extractFirstEmailId(await listResponse.text());
+        expect(emailId).not.toBeNull();
+
+        const detailResponse = await demoInboxApi.detail(Number(emailId));
+        expect(detailResponse.status()).toBe(200);
+        expect(await detailResponse.text()).toContain('/reset-password/');
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -27,6 +42,16 @@ test.describe('DEMO-INBOX :: Security Exposure Baseline', () => {
 
         const html = await response.text();
         expect(html).toContain('data-testid="login-page"');
+      }
+    );
+
+    test(
+      'DEMOINBOX-N02: private inbox mutation endpoint is blocked without authentication @security @regression @safe',
+      async ({ request }) => {
+        const response = await request.post('/inbox/trash/empty', {
+          headers: { Accept: 'application/json' }
+        });
+        expect(response.status()).toBe(401);
       }
     );
   });

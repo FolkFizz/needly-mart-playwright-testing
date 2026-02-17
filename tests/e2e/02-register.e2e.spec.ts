@@ -16,6 +16,18 @@ test.describe('REGISTER :: UI Account Registration', () => {
         await authPage.assertLoginPageVisible();
       }
     );
+
+    test(
+      'REGISTER-P02: newly registered user can login immediately @e2e @regression @destructive',
+      async ({ authPage }) => {
+        const account = buildUniqueAccount('ui_register_login');
+        await authPage.register(account.username, account.email, account.password);
+        await authPage.assertLoginPageVisible();
+
+        await authPage.login(account.username, account.password);
+        await authPage.assertLoggedInUiVisible();
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -27,6 +39,14 @@ test.describe('REGISTER :: UI Account Registration', () => {
           'Username or email already exists',
           'Unable to register now'
         ]);
+      }
+    );
+
+    test(
+      'REGISTER-N02: missing required register fields show validation error @e2e @regression @safe',
+      async ({ authPage }) => {
+        await authPage.register('', '', '');
+        await authPage.assertRegisterErrorContains('All fields are required');
       }
     );
   });

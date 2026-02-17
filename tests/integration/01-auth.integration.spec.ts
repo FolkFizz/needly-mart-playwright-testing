@@ -18,6 +18,21 @@ test.describe('AUTH :: Integration (API + Demo Inbox + Reset Token)', () => {
         expect((await authApi.resetPassword(restoreToken, runtime.user.password)).status()).toBe(200);
       }
     );
+
+    test(
+      'AUTH-P02: reset token from forgot-password can be validated before use @integration @regression @safe',
+      async ({ authApi, demoInboxApi }) => {
+        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        const token = await demoInboxApi.readLatestResetToken();
+
+        const validateResponse = await authApi.validateResetToken(token);
+        expect(validateResponse.status()).toBe(200);
+
+        const body = await validateResponse.json();
+        expect(body.ok).toBe(true);
+        expect(body.tokenValid).toBe(true);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -35,6 +50,17 @@ test.describe('AUTH :: Integration (API + Demo Inbox + Reset Token)', () => {
       'AUTH-E01: forgot-password hides account existence for unknown email @integration @regression @safe',
       async ({ authApi }) => {
         const response = await authApi.forgotPassword('unknown-user-does-not-exist@needlymart.com');
+        expect(response.status()).toBe(200);
+
+        const body = await response.json();
+        expect(String(body.message || '').toLowerCase()).toContain('if the email exists');
+      }
+    );
+
+    test(
+      'AUTH-E02: forgot-password accepts normalized email input with spaces and uppercase @integration @regression @safe',
+      async ({ authApi }) => {
+        const response = await authApi.forgotPassword(`  ${runtime.user.email.toUpperCase()}  `);
         expect(response.status()).toBe(200);
 
         const body = await response.json();

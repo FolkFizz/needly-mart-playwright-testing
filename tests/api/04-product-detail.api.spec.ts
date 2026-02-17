@@ -15,6 +15,18 @@ test.describe('PRODUCT :: API Product Detail', () => {
         expect(body.product.name).toBe(products.apple.name);
       }
     );
+
+    test(
+      'PRODUCT-P02: api product detail works for another valid product id @api @regression @safe',
+      async ({ productsApi }) => {
+        const response = await productsApi.getById(products.bambooSpatula.id);
+        expect(response.status()).toBe(200);
+
+        const body = await response.json();
+        expect(body.ok).toBe(true);
+        expect(body.product.id).toBe(products.bambooSpatula.id);
+      }
+    );
   });
 
   test.describe('negative cases', () => {
@@ -23,6 +35,17 @@ test.describe('PRODUCT :: API Product Detail', () => {
       async ({ productsApi }) => {
         const response = await productsApi.getByRawId('abc');
         expect(response.status()).toBe(400);
+
+        const body = await response.json();
+        expect(body.ok).toBe(false);
+      }
+    );
+
+    test(
+      'PRODUCT-N02: api product detail with very large id returns not found @api @regression @safe',
+      async ({ productsApi }) => {
+        const response = await productsApi.getById(2_147_483_000);
+        expect(response.status()).toBe(404);
 
         const body = await response.json();
         expect(body.ok).toBe(false);
