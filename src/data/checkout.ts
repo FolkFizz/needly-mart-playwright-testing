@@ -8,6 +8,16 @@ export const checkoutForm = {
     name: 'QA Buyer',
     email: 'qa.buyer@example.com',
     address: '123 Test Street, Mock City 10110'
+  },
+  missingAddress: {
+    name: 'QA Buyer',
+    email: 'qa.buyer@example.com',
+    address: ''
+  },
+  invalidEmail: {
+    name: 'QA Buyer',
+    email: 'qa.buyer.invalid',
+    address: '123 Test Street, Mock City 10110'
   }
 } as const;
 

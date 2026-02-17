@@ -16,6 +16,13 @@ export class AuthApiClient {
     });
   }
 
+  async register(username: string, email: string, password: string, confirmPassword = password) {
+    return this.request.post('/api/auth/register', {
+      data: { username, email, password, confirmPassword },
+      headers: { Accept: 'application/json' }
+    });
+  }
+
   async logout() {
     return this.request.post('/api/auth/logout', {
       headers: { Accept: 'application/json' }
@@ -25,6 +32,12 @@ export class AuthApiClient {
   async forgotPassword(email: string) {
     return this.request.post('/api/auth/forgot-password', {
       data: { email },
+      headers: { Accept: 'application/json' }
+    });
+  }
+
+  async validateResetToken(token: string) {
+    return this.request.get(`/api/auth/reset-password/${token}`, {
       headers: { Accept: 'application/json' }
     });
   }

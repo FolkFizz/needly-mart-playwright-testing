@@ -55,6 +55,12 @@ export class CartPage {
     await expect(this.page.getByTestId(TEST_ID.cart.row(productId))).toBeVisible();
   }
 
+  async updateItemQuantity(productId: number, quantity: number) {
+    await this.page.getByTestId(TEST_ID.cart.qtyInput(productId)).fill(String(quantity));
+    await this.page.getByTestId(TEST_ID.cart.qtyInput(productId)).press('Tab');
+    await this.page.waitForLoadState('networkidle');
+  }
+
   async assertEmptyStateVisible() {
     await expect(this.page.getByTestId(TEST_ID.cart.emptyState)).toBeVisible();
   }

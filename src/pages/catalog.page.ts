@@ -16,6 +16,12 @@ export class CatalogPage {
     await this.page.getByTestId(TEST_ID.catalog.applyBtn).click();
   }
 
+  async setPriceRange(minPrice: string, maxPrice: string) {
+    await this.page.getByTestId(TEST_ID.catalog.filterMinPriceInput).fill(minPrice);
+    await this.page.getByTestId(TEST_ID.catalog.filterMaxPriceInput).fill(maxPrice);
+    await this.page.getByTestId(TEST_ID.catalog.applyBtn).click();
+  }
+
   async selectCategory(category: string) {
     await this.page.getByTestId(TEST_ID.catalog.filterCategorySelect).selectOption(category);
     await this.page.getByTestId(TEST_ID.catalog.applyBtn).click();
@@ -28,6 +34,10 @@ export class CatalogPage {
 
   async resetFilters() {
     await this.page.getByTestId(TEST_ID.catalog.resetBtn).click();
+  }
+
+  async openPage(page: number) {
+    await this.page.getByTestId(TEST_ID.catalog.pageBtn(page)).click();
   }
 
   async openProductDetails(productId: number) {
@@ -54,5 +64,9 @@ export class CatalogPage {
 
   async assertEmptyStateVisible() {
     await expect(this.page.getByTestId(TEST_ID.catalog.emptyState)).toBeVisible();
+  }
+
+  async assertEmptyStateHidden() {
+    await expect(this.page.getByTestId(TEST_ID.catalog.emptyState)).toHaveCount(0);
   }
 }

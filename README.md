@@ -93,23 +93,31 @@ Tag groups:
 - This project uses **risk-based** coverage, not equal test counts per test type.
 - A flow can exist in only 1-2 test types if that is enough confidence.
 - Similar scenarios should be merged into one spec when behavior overlaps.
-- Numbering (`01-`, `02-`, ...) is independent per test-type folder and can skip numbers.
+- Numbering (`01-`, `02-`, ...) follows business flow order inside each test-type folder.
 - Keep only tests that protect business risk, security risk, or frequent regressions.
 - Test files must not contain direct locators/selectors.
 - All selector maintenance must happen in `src/selectors/` and be consumed via POM.
 
 ## 7. Business Flow Map
 
-Recommended minimum by flow:
+Current 16-flow matrix (risk-based):
 
-- `01-auth`: `e2e`, `api`, `integration`, `security`, `a11y`
-- `02-catalog`: `e2e`, `api`, `a11y`
-- `03-cart-and-coupon`: `e2e`, `api`, `integration`
-- `04-checkout-and-order`: `e2e`, `integration`, `security`
-- `05-profile-and-order-history`: `e2e`, `api`
-- `06-claims-and-upload`: `e2e`, `api`, `security`
-- `07-inbox-and-demo-inbox`: `e2e`, `integration`
-- `08-test-hooks-and-data-control`: `api`, `security`
+- `01-auth-login-logout`: `e2e`, `api`, `integration`, `security`, `a11y`
+- `02-register`: `e2e`, `api`
+- `03-forgot-reset-password`: `integration`, `api`, `e2e`
+- `04-catalog-search-filter`: `e2e`, `api`
+- `05-product-detail`: `e2e`, `api`
+- `06-cart`: `e2e`, `api`, `integration`
+- `07-coupon`: `e2e`, `api`
+- `08-checkout-payment`: `e2e`, `api`, `a11y`
+- `09-order-history-invoice`: `e2e`, `integration`
+- `10-profile-update`: `e2e`
+- `11-claims-file-upload`: `e2e`, `security`
+- `12-inbox`: `e2e`
+- `13-demo-inbox-public`: `e2e`, `security`
+- `14-platform-api-baseline`: `api`
+- `15-security-baseline`: `security`
+- `16-health-resilience`: `api`, `integration`
 
 Lean rule:
 
@@ -119,14 +127,30 @@ Lean rule:
 ## 8. Current Coverage
 
 - `tests/api/01-auth.api.spec.ts`
-- `tests/api/02-catalog.api.spec.ts`
-- `tests/api/03-cart-and-coupon.api.spec.ts`
+- `tests/api/02-register.api.spec.ts`
+- `tests/api/03-catalog.api.spec.ts`
+- `tests/api/04-product-detail.api.spec.ts`
+- `tests/api/05-cart-and-coupon.api.spec.ts`
+- `tests/api/06-checkout-and-order.api.spec.ts`
+- `tests/api/07-platform.api.spec.ts`
 - `tests/e2e/01-auth.e2e.spec.ts`
-- `tests/e2e/02-catalog.e2e.spec.ts`
-- `tests/e2e/03-cart-and-coupon.e2e.spec.ts`
+- `tests/e2e/02-register.e2e.spec.ts`
+- `tests/e2e/03-catalog.e2e.spec.ts`
+- `tests/e2e/04-product-detail.e2e.spec.ts`
+- `tests/e2e/05-cart-and-coupon.e2e.spec.ts`
+- `tests/e2e/06-checkout-and-order.e2e.spec.ts`
+- `tests/e2e/07-order-history-and-invoice.e2e.spec.ts`
+- `tests/e2e/08-profile.e2e.spec.ts`
+- `tests/e2e/09-claims-and-upload.e2e.spec.ts`
+- `tests/e2e/10-inbox-and-demo-inbox.e2e.spec.ts`
 - `tests/integration/01-auth.integration.spec.ts`
+- `tests/integration/02-forgot-reset.integration.spec.ts`
+- `tests/integration/03-platform.integration.spec.ts`
 - `tests/security/01-auth.security.spec.ts`
+- `tests/security/02-demo-inbox.security.spec.ts`
+- `tests/security/03-platform.security.spec.ts`
 - `tests/a11y/01-auth.a11y.spec.ts`
+- `tests/a11y/02-checkout-and-profile.a11y.spec.ts`
 
 Every spec follows:
 
@@ -160,6 +184,7 @@ Required:
 Optional:
 
 - `API_BASE_URL` (defaults to `BASE_URL`)
+- `TEST_API_KEY` (used by test-hook endpoint checks when available)
 - timeout/headless flags from `.env.example`
 
 ## 11. Run Commands

@@ -30,4 +30,10 @@ export class OrdersApiClient {
       headers: { Accept: 'application/json' }
     });
   }
+
+  async getInvoicePage(orderId: string) {
+    return this.request.get(`/order/invoice/${orderId}`, {
+      headers: { Accept: 'text/html' }
+    });
+  }
 }

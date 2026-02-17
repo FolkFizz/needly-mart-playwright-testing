@@ -10,12 +10,29 @@ export class ProductPage {
     await expect(this.page.getByTestId(TEST_ID.product.page)).toBeVisible();
   }
 
+  async gotoProductExpectNotFound(productId: number) {
+    await this.page.goto(ROUTE.product(productId));
+    await expect(this.page.getByTestId(TEST_ID.common.notFoundPage)).toBeVisible();
+  }
+
   async getTitleText() {
     return (await this.page.getByTestId(TEST_ID.product.title).textContent())?.trim() || '';
   }
 
+  async readStockText() {
+    return (await this.page.getByTestId(TEST_ID.product.stock).textContent())?.trim() || '';
+  }
+
   async assertTitleEquals(expectedTitle: string) {
     await expect(this.page.getByTestId(TEST_ID.product.title)).toHaveText(expectedTitle);
+  }
+
+  async assertOutOfStockVisible() {
+    await expect(this.page.getByTestId(TEST_ID.product.outOfStock)).toBeVisible();
+  }
+
+  async assertNotFoundMessageContains(message: string) {
+    await expect(this.page.getByTestId(TEST_ID.common.notFoundMessage)).toContainText(message);
   }
 
   async setQuantity(quantity: number) {

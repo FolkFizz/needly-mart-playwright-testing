@@ -4,14 +4,37 @@ import { extractFirstEmailId, extractResetToken } from '@helpers/demo-inbox';
 export class DemoInboxApiClient {
   constructor(private readonly request: APIRequestContext) {}
 
-  async list() {
+  async list(box?: 'inbox' | 'trash') {
     return this.request.get('/demo-inbox', {
+      params: box ? { box } : undefined,
       headers: { Accept: 'text/html' }
     });
   }
 
-  async detail(emailId: number) {
+  async detail(emailId: number, box?: 'inbox' | 'trash') {
     return this.request.get(`/demo-inbox/${emailId}`, {
+      params: box ? { box } : undefined,
+      headers: { Accept: 'text/html' }
+    });
+  }
+
+  async moveToTrash(emailId: number, box: 'inbox' | 'trash' = 'inbox') {
+    return this.request.post(`/demo-inbox/${emailId}/delete`, {
+      form: { box },
+      headers: { Accept: 'text/html' }
+    });
+  }
+
+  async restore(emailId: number, box: 'inbox' | 'trash' = 'trash') {
+    return this.request.post(`/demo-inbox/${emailId}/restore`, {
+      form: { box },
+      headers: { Accept: 'text/html' }
+    });
+  }
+
+  async destroy(emailId: number, box: 'inbox' | 'trash' = 'trash') {
+    return this.request.post(`/demo-inbox/${emailId}/destroy`, {
+      form: { box },
       headers: { Accept: 'text/html' }
     });
   }

@@ -29,6 +29,9 @@ export const runtime = {
     email: pick('TEST_USER_EMAIL', 'user@needlymart.com'),
     newPassword: pick('TEST_USER_NEW_PASSWORD', 'user123_new')
   },
+  testHooks: {
+    apiKey: pick('TEST_API_KEY', '')
+  },
   timeouts: {
     test: toInt(process.env.TEST_TIMEOUT_MS, 45_000),
     expect: toInt(process.env.EXPECT_TIMEOUT_MS, 7_000),

@@ -23,6 +23,19 @@ export class CartApiClient {
     });
   }
 
+  async updateItem(productId: number, quantity: number) {
+    return this.request.patch(`/api/cart/items/${productId}`, {
+      data: { quantity },
+      headers: { Accept: 'application/json' }
+    });
+  }
+
+  async removeItem(productId: number) {
+    return this.request.delete(`/api/cart/items/${productId}`, {
+      headers: { Accept: 'application/json' }
+    });
+  }
+
   async removeCoupon() {
     return this.request.delete('/api/cart/coupon', {
       headers: { Accept: 'application/json' }

@@ -52,6 +52,14 @@ export class CheckoutPage {
     await this.page.getByTestId(TEST_ID.checkout.addressInput).fill('');
   }
 
+  async clearName() {
+    await this.page.getByTestId(TEST_ID.checkout.nameInput).fill('');
+  }
+
+  async clearEmail() {
+    await this.page.getByTestId(TEST_ID.checkout.emailInput).fill('');
+  }
+
   async assertPayButtonEnabled() {
     await expect(this.page.getByTestId(TEST_ID.checkout.payButton)).toBeEnabled();
   }
@@ -62,6 +70,10 @@ export class CheckoutPage {
 
   async assertPaymentStatusContains(message: string) {
     await expect(this.page.getByTestId(TEST_ID.checkout.paymentStatus)).toContainText(message);
+  }
+
+  async readPaymentStatusText() {
+    return (await this.page.getByTestId(TEST_ID.checkout.paymentStatus).textContent())?.trim() || '';
   }
 
   async assertCheckoutErrorContains(message: string) {

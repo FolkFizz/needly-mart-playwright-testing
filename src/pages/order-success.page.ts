@@ -18,4 +18,8 @@ export class OrderSuccessPage {
   async assertOrderIdVisible() {
     await expect(this.page.getByTestId(TEST_ID.orderSuccess.orderId)).toContainText('ORD-');
   }
+
+  async openInvoice() {
+    await this.page.getByTestId(TEST_ID.orderSuccess.invoiceLink).click();
+  }
 }
