@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  smoke:
+    name: Smoke
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    env:
+      BASE_URL: ${{ vars.NEEDLY_BASE_URL }}
+      API_BASE_URL: ${{ vars.NEEDLY_API_BASE_URL || vars.NEEDLY_BASE_URL }}
+      TEST_USER_USERNAME: ${{ vars.NEEDLY_TEST_USER_USERNAME }}
+      TEST_USER_PASSWORD: ${{ secrets.NEEDLY_TEST_USER_PASSWORD }}
+      TEST_USER_EMAIL: ${{ vars.NEEDLY_TEST_USER_EMAIL }}
+      TEST_USER_NEW_PASSWORD: ${{ secrets.NEEDLY_TEST_USER_NEW_PASSWORD }}
+      HEADLESS: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm run test:smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-artifacts
+          path: |
+            playwright-report
+            allure-results
+            test-results
+
+  regression:
+    name: Full Regression
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    env:
+      BASE_URL: ${{ vars.NEEDLY_BASE_URL }}
+      API_BASE_URL: ${{ vars.NEEDLY_API_BASE_URL || vars.NEEDLY_BASE_URL }}
+      TEST_USER_USERNAME: ${{ vars.NEEDLY_TEST_USER_USERNAME }}
+      TEST_USER_PASSWORD: ${{ secrets.NEEDLY_TEST_USER_PASSWORD }}
+      TEST_USER_EMAIL: ${{ vars.NEEDLY_TEST_USER_EMAIL }}
+      TEST_USER_NEW_PASSWORD: ${{ secrets.NEEDLY_TEST_USER_NEW_PASSWORD }}
+      HEADLESS: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-artifacts
+          path: |
+            playwright-report
+            allure-results
+            test-results

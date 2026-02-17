@@ -1,0 +1,30 @@
+{
+  "name": "needly-mart-playwright-testing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal, scalable QA automation framework for Needly Mart using Playwright + TypeScript.",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "cross-env TAGS=@smoke playwright test",
+    "test:e2e": "cross-env TAGS=@e2e playwright test",
+    "test:api": "cross-env TAGS=@api playwright test",
+    "test:a11y": "cross-env TAGS=@a11y playwright test",
+    "test:security": "cross-env TAGS=@security playwright test",
+    "test:integration": "cross-env TAGS=@integration playwright test",
+    "test:mobile": "cross-env TAGS=@mobile playwright test --project=Mobile Chrome",
+    "typecheck": "tsc --noEmit",
+    "report:allure:generate": "allure generate allure-results --clean -o allure-report",
+    "report:allure:open": "allure open allure-report",
+    "report:allure": "npm run report:allure:generate && npm run report:allure:open"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.10.2",
+    "allure-commandline": "^2.34.1",
+    "allure-playwright": "^3.4.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
+    "typescript": "^5.7.2"
+  }
+}
