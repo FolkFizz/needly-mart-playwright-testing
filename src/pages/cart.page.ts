@@ -59,6 +59,10 @@ export class CartPage {
     await expect(this.page.getByTestId(TEST_ID.cart.emptyState)).toBeVisible();
   }
 
+  async openCheckout() {
+    await this.page.getByTestId(TEST_ID.cart.checkoutLink).click();
+  }
+
   async readSubtotal() {
     const text = (await this.page.getByTestId(TEST_ID.cart.subtotal).textContent()) || '';
     return parseMoney(text);

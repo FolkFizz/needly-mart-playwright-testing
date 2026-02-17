@@ -1,7 +1,7 @@
 import { test } from '@fixtures/test.base';
 import { products } from '@data/products';
 
-test.describe('CATALOG :: UI Browse And Search @e2e @catalog', () => {
+test.describe('CATALOG :: UI Browse And Search', () => {
   test.beforeEach(async ({ catalogPage }) => {
     await catalogPage.gotoCatalog();
   });

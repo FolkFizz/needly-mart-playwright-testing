@@ -1,7 +1,7 @@
 import { test } from '@fixtures/test.base';
 import { accounts } from '@data/accounts';
 
-test.describe('AUTH :: UI Login Flow @e2e @auth', () => {
+test.describe('AUTH :: UI Login Flow', () => {
   test.beforeEach(async ({ authPage }) => {
     await authPage.gotoLogin();
   });

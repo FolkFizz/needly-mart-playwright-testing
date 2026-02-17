@@ -3,6 +3,12 @@ import { APIRequestContext, expect } from '@playwright/test';
 export class AuthApiClient {
   constructor(private readonly request: APIRequestContext) {}
 
+  async getLoginPage() {
+    return this.request.get('/login', {
+      headers: { Accept: 'text/html' }
+    });
+  }
+
   async login(username: string, password: string) {
     return this.request.post('/api/auth/login', {
       data: { username, password },

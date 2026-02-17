@@ -2,7 +2,7 @@ import { test, expect } from '@fixtures/test.base';
 import { products } from '@data/products';
 import { coupons } from '@data/coupons';
 
-test.describe('CART :: API Cart And Coupon @api @cart', () => {
+test.describe('CART :: API Cart And Coupon', () => {
   test.beforeEach(async ({ cartApi }) => {
     await cartApi.clear();
   });

@@ -1,7 +1,7 @@
 import { test, expect } from '@fixtures/test.base';
 import { accounts } from '@data/accounts';
 
-test.describe('AUTH :: API Login Flow @api @auth', () => {
+test.describe('AUTH :: API Login Flow', () => {
   test.describe('positive cases', () => {
     test(
       'AUTH-P01: api login with valid credentials returns user payload @smoke @api @safe',

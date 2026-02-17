@@ -1,12 +1,12 @@
 import { test, expect } from '@fixtures/test.base';
 import { runtime } from '@config/env';
 
-test.describe('AUTH :: Security Baseline @security @auth', () => {
+test.describe('AUTH :: Security Baseline', () => {
   test.describe('positive cases', () => {
     test(
       'AUTH-P01: login page returns baseline security headers @smoke @security @safe',
-      async ({ request }) => {
-        const response = await request.get('/login');
+      async ({ authApi }) => {
+        const response = await authApi.getLoginPage();
         expect(response.status()).toBe(200);
 
         const headers = response.headers();

@@ -41,6 +41,7 @@ export const TEST_ID = {
     emptyState: 'cart-empty-state',
     success: 'cart-success',
     error: 'cart-error',
+    checkoutLink: 'cart-checkout-link',
     row: (id: number) => `cart-row-${id}`,
     clearBtn: 'cart-clear-btn',
     couponInput: 'cart-coupon-input',
@@ -50,5 +51,26 @@ export const TEST_ID = {
     discountRow: 'cart-discount-row',
     subtotal: 'cart-subtotal',
     grandTotal: 'cart-grand-total'
+  },
+  checkout: {
+    page: 'checkout-page',
+    title: 'checkout-title',
+    error: 'checkout-error',
+    success: 'checkout-success',
+    nameInput: 'checkout-name-input',
+    emailInput: 'checkout-email-input',
+    addressInput: 'checkout-address-input',
+    cardNumberInput: 'checkout-card-number-input',
+    expMonthInput: 'checkout-exp-month-input',
+    expYearInput: 'checkout-exp-year-input',
+    cvcInput: 'checkout-cvc-input',
+    paymentStatus: 'checkout-payment-status',
+    payButton: 'mock-pay-btn'
+  },
+  orderSuccess: {
+    page: 'order-success-page',
+    title: 'order-success-title',
+    orderId: 'order-success-order-id',
+    invoiceLink: 'order-success-view-invoice-link'
   }
 } as const;

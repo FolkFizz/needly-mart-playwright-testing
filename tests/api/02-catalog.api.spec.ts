@@ -1,7 +1,7 @@
 import { test, expect } from '@fixtures/test.base';
 import { products } from '@data/products';
 
-test.describe('CATALOG :: API Product Discovery @api @catalog', () => {
+test.describe('CATALOG :: API Product Discovery', () => {
   test.describe('positive cases', () => {
     test(
       'CATALOG-P01: list products by valid category returns results @smoke @api @safe',

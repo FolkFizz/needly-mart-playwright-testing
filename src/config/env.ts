@@ -17,7 +17,7 @@ const pick = (key: string, fallback: string): string => {
   return value && value.trim().length > 0 ? value.trim() : fallback;
 };
 
-const baseUrl = pick('BASE_URL', 'http://localhost:3000');
+const baseUrl = pick('BASE_URL', 'https://needly-mart-web.onrender.com');
 
 export const runtime = {
   baseUrl,

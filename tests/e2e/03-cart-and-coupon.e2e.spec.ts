@@ -2,7 +2,7 @@ import { test } from '@fixtures/test.base';
 import { products } from '@data/products';
 import { coupons } from '@data/coupons';
 
-test.describe('CART :: UI Cart And Coupon @e2e @cart', () => {
+test.describe('CART :: UI Cart And Coupon', () => {
   test.beforeEach(async ({ cartPage }) => {
     await cartPage.gotoCart();
     await cartPage.clearCartIfNeeded();
