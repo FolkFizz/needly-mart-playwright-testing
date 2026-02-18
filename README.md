@@ -149,9 +149,11 @@ Lean rule:
 - `tests/security/01-auth.security.spec.ts`
 - `tests/security/02-demo-inbox.security.spec.ts`
 - `tests/security/03-platform.security.spec.ts`
-- `tests/a11y/01-auth.a11y.spec.ts`
-- `tests/a11y/02-checkout-and-profile.a11y.spec.ts`
-- `tests/a11y/03-mobile-layout-and-zoom.a11y.spec.ts`
+- `tests/a11y/01-auth-and-guard.a11y.spec.ts`
+- `tests/a11y/02-catalog-cart-checkout.a11y.spec.ts`
+- `tests/a11y/03-post-order-profile-claims.a11y.spec.ts`
+- `tests/a11y/04-inbox.a11y.spec.ts`
+- `tests/a11y/05-mobile-and-zoom.a11y.spec.ts`
 
 Every spec follows:
 
