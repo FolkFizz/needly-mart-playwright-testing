@@ -8,7 +8,8 @@ export const accounts = {
   primary: {
     username: runtime.user.username,
     password: runtime.user.password,
-    email: runtime.user.email
+    email: runtime.user.email,
+    newPassword: runtime.user.newPassword
   },
   invalid: {
     username: runtime.user.username,

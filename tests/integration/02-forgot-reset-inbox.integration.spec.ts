@@ -1,4 +1,5 @@
-import { runtime } from '@config/env';
+import { accounts } from '@data/accounts';
+import { integrationData } from '@data/integration';
 import { test, expect } from '@fixtures/test.base';
 
 test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
@@ -6,17 +7,23 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
     test(
       'RESETINBOX-P01: forgot-password creates reset token in demo inbox and allows password reset end-to-end @integration @regression @destructive',
       async ({ authApi, demoInboxApi }) => {
-        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(integrationData.status.ok);
 
         const resetToken = await demoInboxApi.readLatestResetToken();
-        expect((await authApi.validateResetToken(resetToken)).status()).toBe(200);
-        expect((await authApi.resetPassword(resetToken, runtime.user.newPassword)).status()).toBe(200);
-        expect((await authApi.login(runtime.user.username, runtime.user.newPassword)).status()).toBe(200);
+        expect((await authApi.validateResetToken(resetToken)).status()).toBe(integrationData.status.ok);
+        expect((await authApi.resetPassword(resetToken, accounts.primary.newPassword)).status()).toBe(
+          integrationData.status.ok
+        );
+        expect((await authApi.login(accounts.primary.username, accounts.primary.newPassword)).status()).toBe(
+          integrationData.status.ok
+        );
 
         // Cleanup to keep environment stable for next runs.
-        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(integrationData.status.ok);
         const restoreToken = await demoInboxApi.readLatestResetToken();
-        expect((await authApi.resetPassword(restoreToken, runtime.user.password)).status()).toBe(200);
+        expect((await authApi.resetPassword(restoreToken, accounts.primary.password)).status()).toBe(
+          integrationData.status.ok
+        );
       }
     );
   });
@@ -26,7 +33,7 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
       'RESETINBOX-N01: forgot-password requires non-empty email @integration @regression @safe',
       async ({ authApi }) => {
         const response = await authApi.forgotPassword('');
-        expect(response.status()).toBe(400);
+        expect(response.status()).toBe(integrationData.status.badRequest);
 
         const body = await response.json();
         expect(body.ok).toBe(false);
@@ -36,8 +43,8 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
     test(
       'RESETINBOX-N02: reset-password rejects invalid token @integration @regression @safe',
       async ({ authApi }) => {
-        const response = await authApi.resetPassword('invalid-reset-token-value', runtime.user.newPassword);
-        expect(response.status()).toBe(400);
+        const response = await authApi.resetPassword(integrationData.reset.invalidToken, accounts.primary.newPassword);
+        expect(response.status()).toBe(integrationData.status.badRequest);
 
         const body = await response.json();
         expect(body.ok).toBe(false);
@@ -49,18 +56,22 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
     test(
       'RESETINBOX-E01: reset token is single-use and cannot be reused after successful reset @integration @regression @destructive',
       async ({ authApi, demoInboxApi }) => {
-        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(integrationData.status.ok);
         const token = await demoInboxApi.readLatestResetToken();
 
-        expect((await authApi.resetPassword(token, runtime.user.newPassword)).status()).toBe(200);
+        expect((await authApi.resetPassword(token, accounts.primary.newPassword)).status()).toBe(
+          integrationData.status.ok
+        );
 
-        const secondTry = await authApi.resetPassword(token, runtime.user.password);
-        expect(secondTry.status()).toBe(400);
+        const secondTry = await authApi.resetPassword(token, accounts.primary.password);
+        expect(secondTry.status()).toBe(integrationData.status.badRequest);
 
         // Cleanup password back to baseline.
-        expect((await authApi.forgotPassword(runtime.user.email)).status()).toBe(200);
+        expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(integrationData.status.ok);
         const restoreToken = await demoInboxApi.readLatestResetToken();
-        expect((await authApi.resetPassword(restoreToken, runtime.user.password)).status()).toBe(200);
+        expect((await authApi.resetPassword(restoreToken, accounts.primary.password)).status()).toBe(
+          integrationData.status.ok
+        );
       }
     );
   });

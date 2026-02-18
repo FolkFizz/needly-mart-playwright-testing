@@ -1,4 +1,7 @@
 import { runtime } from '@config/env';
+import { ROUTE } from '@config/routes';
+import { integrationData } from '@data/integration';
+import { products } from '@data/products';
 import { test, expect } from '@fixtures/test.base';
 
 test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
@@ -9,10 +12,10 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
         test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
 
         const resetResponse = await testHooksApi.reset(runtime.testHooks.apiKey);
-        expect([200, 403]).toContain(resetResponse.status());
+        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(resetResponse.status());
 
         const seedResponse = await testHooksApi.seed(runtime.testHooks.apiKey);
-        expect([200, 403]).toContain(seedResponse.status());
+        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(seedResponse.status());
       }
     );
   });
@@ -22,7 +25,7 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
       'TESTHOOKS-N01: reset endpoint is forbidden without api key @integration @regression @safe',
       async ({ testHooksApi }) => {
         const response = await testHooksApi.reset();
-        expect(response.status()).toBe(403);
+        expect(response.status()).toBe(integrationData.status.forbidden);
 
         const body = await response.json().catch(() => ({}));
         expect(String(body.message || '')).not.toBe('');
@@ -32,8 +35,8 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
     test(
       'TESTHOOKS-N02: set-stock endpoint is forbidden without api key @integration @regression @safe',
       async ({ testHooksApi }) => {
-        const response = await testHooksApi.setStock(1, 50);
-        expect(response.status()).toBe(403);
+        const response = await testHooksApi.setStock(products.apple.id, integrationData.testHooks.defaultStock);
+        expect(response.status()).toBe(integrationData.status.forbidden);
 
         const body = await response.json().catch(() => ({}));
         expect(String(body.message || '')).not.toBe('');
@@ -47,8 +50,12 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
       async ({ testHooksApi }) => {
         test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
 
-        const response = await testHooksApi.setStock(999_999, 10, runtime.testHooks.apiKey);
-        expect([404, 403]).toContain(response.status());
+        const response = await testHooksApi.setStock(
+          integrationData.testHooks.invalidProductId,
+          integrationData.order.quantity.single,
+          runtime.testHooks.apiKey
+        );
+        expect([integrationData.status.notFound, integrationData.status.forbidden]).toContain(response.status());
       }
     );
 
@@ -57,15 +64,15 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
       async ({ request }) => {
         test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
 
-        const response = await request.post('/api/test/reset-stock', {
-          data: { stock: -1 },
+        const response = await request.post(ROUTE.testResetStock, {
+          data: { stock: integrationData.testHooks.invalidStock },
           headers: {
             Accept: 'application/json',
             'x-stock-reset-key': runtime.testHooks.apiKey
           }
         });
 
-        expect([400, 403]).toContain(response.status());
+        expect([integrationData.status.badRequest, integrationData.status.forbidden]).toContain(response.status());
       }
     );
   });

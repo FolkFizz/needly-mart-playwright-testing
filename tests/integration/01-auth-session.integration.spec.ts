@@ -1,6 +1,7 @@
-import { runtime } from '@config/env';
-import { products } from '@data/products';
+import { accounts } from '@data/accounts';
+import { integrationData } from '@data/integration';
 import { test, expect } from '@fixtures/test.base';
+import { pickInStockProductId } from '@helpers/integration-flow';
 
 test.describe('AUTHSESSION :: Integration Auth Session Cart Merge', () => {
   test.beforeEach(async ({ authApi, cartApi }) => {
@@ -11,27 +12,28 @@ test.describe('AUTHSESSION :: Integration Auth Session Cart Merge', () => {
   test.describe('positive cases', () => {
     test(
       'AUTHSESSION-P01: anonymous cart item is preserved through login and me endpoint confirms authenticated user @integration @regression @safe',
-      async ({ cartApi, authApi }) => {
-        expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
+      async ({ cartApi, authApi, productsApi }) => {
+        const productId = await pickInStockProductId(productsApi);
+        expect((await cartApi.add(productId, 1)).status()).toBe(integrationData.status.ok);
 
         const beforeLoginCart = await cartApi.get();
-        expect(beforeLoginCart.status()).toBe(200);
+        expect(beforeLoginCart.status()).toBe(integrationData.status.ok);
 
-        const loginResponse = await authApi.login(runtime.user.username, runtime.user.password);
-        expect(loginResponse.status()).toBe(200);
+        const loginResponse = await authApi.login(accounts.primary.username, accounts.primary.password);
+        expect(loginResponse.status()).toBe(integrationData.status.ok);
 
         const meResponse = await authApi.me();
-        expect(meResponse.status()).toBe(200);
+        expect(meResponse.status()).toBe(integrationData.status.ok);
         const meBody = await meResponse.json();
         expect(meBody.ok).toBe(true);
-        expect(meBody.user.username).toBe(runtime.user.username);
+        expect(meBody.user.username).toBe(accounts.primary.username);
 
         const afterLoginCart = await cartApi.get();
-        expect(afterLoginCart.status()).toBe(200);
+        expect(afterLoginCart.status()).toBe(integrationData.status.ok);
         const cartBody = await afterLoginCart.json();
-        const item = (cartBody.cart || []).find((row: { id: number }) => Number(row.id) === products.apple.id);
+        const item = (cartBody.cart || []).find((row: { id: number }) => Number(row.id) === productId);
         expect(item).toBeTruthy();
-        expect(Number(item.quantity)).toBeGreaterThanOrEqual(1);
+        expect(Number(item.quantity)).toBeGreaterThanOrEqual(integrationData.order.quantity.single);
       }
     );
   });
@@ -40,11 +42,11 @@ test.describe('AUTHSESSION :: Integration Auth Session Cart Merge', () => {
     test(
       'AUTHSESSION-N01: invalid login does not create authenticated session @integration @regression @safe',
       async ({ authApi }) => {
-        const loginResponse = await authApi.login(runtime.user.username, 'wrong_password_integration_guard');
-        expect(loginResponse.status()).toBe(401);
+        const loginResponse = await authApi.login(accounts.primary.username, integrationData.auth.invalidPassword);
+        expect(loginResponse.status()).toBe(integrationData.status.unauthorized);
 
         const meResponse = await authApi.me();
-        expect(meResponse.status()).toBe(401);
+        expect(meResponse.status()).toBe(integrationData.status.unauthorized);
       }
     );
   });
@@ -53,15 +55,19 @@ test.describe('AUTHSESSION :: Integration Auth Session Cart Merge', () => {
     test(
       'AUTHSESSION-E01: repeated login and logout cycle keeps session behavior consistent @integration @regression @safe',
       async ({ authApi, cartApi }) => {
-        expect((await authApi.login(runtime.user.username, runtime.user.password)).status()).toBe(200);
-        expect((await authApi.logout()).status()).toBe(200);
-        expect((await authApi.login(runtime.user.username, runtime.user.password)).status()).toBe(200);
+        expect((await authApi.login(accounts.primary.username, accounts.primary.password)).status()).toBe(
+          integrationData.status.ok
+        );
+        expect((await authApi.logout()).status()).toBe(integrationData.status.ok);
+        expect((await authApi.login(accounts.primary.username, accounts.primary.password)).status()).toBe(
+          integrationData.status.ok
+        );
 
         const cartResponse = await cartApi.get();
-        expect(cartResponse.status()).toBe(200);
+        expect(cartResponse.status()).toBe(integrationData.status.ok);
 
         const meResponse = await authApi.me();
-        expect(meResponse.status()).toBe(200);
+        expect(meResponse.status()).toBe(integrationData.status.ok);
       }
     );
   });

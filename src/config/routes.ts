@@ -11,8 +11,12 @@ export const ROUTE = {
   claim: '/claim',
   inbox: '/inbox',
   demoInbox: '/demo-inbox',
+  claimEvidence: (id: number) => `/profile/claims/${id}/evidence`,
+  claimDelete: (id: number) => `/profile/claims/${id}/delete`,
+  claimRestore: (id: number) => `/profile/claims/${id}/restore`,
   orderSuccess: (orderId: string) => `/order/success?order_id=${encodeURIComponent(orderId)}`,
   invoice: (orderId: string) => `/order/invoice/${orderId}`,
+  testResetStock: '/api/test/reset-stock',
   health: '/health',
   healthDb: '/health/db'
 } as const;
