@@ -11,7 +11,7 @@
     "test:a11y": "cross-env TAGS=@a11y playwright test",
     "test:security": "cross-env TAGS=@security playwright test",
     "test:integration": "cross-env TAGS=@integration playwright test",
-    "test:mobile": "cross-env TAGS=@mobile playwright test --project=Mobile Chrome",
+    "test:mobile": "cross-env TAGS=@mobile playwright test --project=iphone --project=pixel",
     "typecheck": "tsc --noEmit",
     "report:allure:generate": "allure generate allure-results --clean -o allure-report",
     "report:allure:open": "allure open allure-report",

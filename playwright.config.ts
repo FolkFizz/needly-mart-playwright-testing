@@ -43,12 +43,22 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'Desktop Chrome',
+      name: 'chrome',
       use: { ...devices['Desktop Chrome'] },
       grepInvert: /@mobile/
     },
     {
-      name: 'Mobile Chrome',
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      grepInvert: /@mobile/
+    },
+    {
+      name: 'iphone',
+      use: { ...devices['iPhone 15 Pro'] },
+      grep: /@mobile/
+    },
+    {
+      name: 'pixel',
       use: { ...devices['Pixel 7'] },
       grep: /@mobile/
     }
