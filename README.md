@@ -147,9 +147,11 @@ Lean rule:
 - `tests/integration/04-postorder-profile-claims.integration.spec.ts`
 - `tests/integration/05-platform-and-guards.integration.spec.ts`
 - `tests/integration/06-test-hooks-and-stock-reset.integration.spec.ts`
-- `tests/security/01-auth.security.spec.ts`
-- `tests/security/02-demo-inbox.security.spec.ts`
-- `tests/security/03-platform.security.spec.ts`
+- `tests/security/01-auth-session-reset.security.spec.ts`
+- `tests/security/02-access-control-ownership.security.spec.ts`
+- `tests/security/03-input-validation-upload.security.spec.ts`
+- `tests/security/04-platform-hardening-rate-limit.security.spec.ts`
+- `tests/security/05-test-hooks-operational.security.spec.ts`
 - `tests/a11y/01-auth-and-guard.a11y.spec.ts`
 - `tests/a11y/02-catalog-cart-checkout.a11y.spec.ts`
 - `tests/a11y/03-post-order-profile-claims.a11y.spec.ts`
