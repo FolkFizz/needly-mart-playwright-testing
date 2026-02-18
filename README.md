@@ -1,91 +1,101 @@
-# Needly Mart Playwright Testing
+# Needly Mart — Playwright Test Automation
 
-QA automation framework for Needly Mart using Playwright + TypeScript, with layered coverage across `e2e`, `api`, `integration`, `security`, and `a11y`.
+> End-to-end QA automation framework for Needly Mart built with **Playwright + TypeScript**, covering E2E, API, Integration, Security, and Accessibility testing.
 
-## Table Of Contents
+---
 
-- [1. Project Summary](#1-project-summary)
-- [2. Test Scope](#2-test-scope)
-- [3. Framework Design](#3-framework-design)
-- [4. Naming And Tags](#4-naming-and-tags)
-- [5. Quick Start](#5-quick-start)
-- [6. Environment Variables](#6-environment-variables)
-- [7. Run Commands](#7-run-commands)
-- [8. Reports](#8-reports)
-- [9. CI/CD](#9-cicd)
-- [10. Stock Reset API](#10-stock-reset-api)
+## Table of Contents
 
-## 1. Project Summary
+- [Overview](#overview)
+- [Test Scope](#test-scope)
+- [Project Structure](#project-structure)
+- [Naming Convention & Tags](#naming-convention--tags)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Running Tests](#running-tests)
+- [Reports](#reports)
+- [CI/CD](#cicd)
+- [Stock Reset API](#stock-reset-api)
 
-- Purpose: validate core business flows and platform risks of Needly Mart.
-- Language/Runner: TypeScript + Playwright.
-- Report: HTML + Allure.
-- Browser Projects:
-  - Desktop: `chrome`, `webkit`
-  - Mobile: `iphone`, `pixel`
+---
 
-## 2. Test Scope
+## Overview
 
-Test suites are organized by test type:
+| Item | Detail |
+|---|---|
+| Language | TypeScript |
+| Runner | Playwright |
+| Reports | HTML + Allure |
+| Desktop Browsers | `chrome`, `webkit` |
+| Mobile Emulators | `iphone`, `pixel` |
 
-- `tests/e2e`: user lifecycle flows (auth, shopping, order, claims, inbox, guards, mobile)
-- `tests/api`: endpoint and contract-level behavior
-- `tests/integration`: multi-step backend/state flows
-- `tests/security`: authz, validation, hardening, operational surfaces
-- `tests/a11y`: accessibility checks using `@axe-core/playwright`
+---
 
-Current file count:
+## Test Scope
 
-- `e2e`: 8 spec files
-- `api`: 5 spec files
-- `integration`: 6 spec files
-- `security`: 5 spec files
-- `a11y`: 5 spec files
+| Suite | Path | Files | Coverage |
+|---|---|---|---|
+| E2E | `tests/e2e` | 8 | Auth, shopping, orders, claims, inbox, guards, mobile |
+| API | `tests/api` | 5 | Endpoint & contract-level behavior |
+| Integration | `tests/integration` | 6 | Multi-step backend/state flows |
+| Security | `tests/security` | 5 | AuthZ, input validation, hardening, operational surfaces |
+| Accessibility | `tests/a11y` | 5 | WCAG checks via `@axe-core/playwright` |
 
-## 3. Framework Design
+---
 
-```text
+## Project Structure
+
+```
 src/
-  api/clients/      # API wrappers
-  config/           # env/routes/runtime config
-  data/             # centralized test constants/data
-  fixtures/         # test.extend fixtures
-  helpers/          # shared utility/flow helpers
-  pages/            # POM classes
-  selectors/        # selector registry
+├── api/clients/      # API client wrappers
+├── config/           # Env, routes, and runtime configuration
+├── data/             # Centralized test constants and data
+├── fixtures/         # Custom test.extend() fixtures
+├── helpers/          # Shared utility and flow helpers
+├── pages/            # Page Object Model (POM) classes
+└── selectors/        # Centralized selector registry
 
 tests/
-  a11y/ api/ e2e/ integration/ security/   # spec files only
+├── a11y/
+├── api/
+├── e2e/
+├── integration/
+└── security/
 ```
 
-Implementation rules:
+**Design principles:**
+- All UI selectors are defined in `src/selectors` and consumed via POM/helpers — never hardcoded in specs.
+- Test constants and shared flows are centralized in `src/data` and `src/helpers`.
+- Every spec file follows a `positive / negative / edge` case structure.
 
-- UI selectors live in one place (`src/selectors`) and are consumed through POM/helpers.
-- Shared constants and flow helpers are centralized in `src/data` and `src/helpers`.
-- Every spec file follows `positive / negative / edge` structure.
+---
 
-## 4. Naming And Tags
+## Naming Convention & Tags
 
-Test title format:
+**Title format:**
 
-```text
+```
 <DOMAIN>-<P|N|E><NN>: <behavior> @tag1 @tag2 @tag3
 ```
 
-Example:
+**Example:**
 
-```text
+```
 AUTH-P01: login with valid credentials succeeds @smoke @e2e @safe
 ```
 
-Primary tags:
+**Available tags:**
 
-- Type: `@e2e`, `@api`, `@integration`, `@security`, `@a11y`
-- Suite: `@smoke`, `@regression`
-- Risk: `@safe`, `@destructive`
-- Platform: `@mobile`
+| Category | Tags |
+|---|---|
+| Type | `@e2e` `@api` `@integration` `@security` `@a11y` |
+| Suite | `@smoke` `@regression` |
+| Risk | `@safe` `@destructive` |
+| Platform | `@mobile` |
 
-## 5. Quick Start
+---
+
+## Getting Started
 
 ```bash
 npm install
@@ -93,26 +103,43 @@ npx playwright install --with-deps chromium
 cp .env.example .env
 ```
 
-## 6. Environment Variables
+Edit `.env` with your environment values before running tests.
 
-Required:
+---
 
-- `PROD_URL`
-- `TEST_USER_USERNAME`
-- `TEST_USER_PASSWORD`
-- `TEST_USER_EMAIL`
-- `TEST_USER_NEW_PASSWORD`
+## Environment Variables
 
-Optional:
+**Required:**
 
-- `TEST_API_KEY` (for test-hook endpoint checks where enabled)
-- `STOCK_RESET_API_KEY` (for production stock reset calls)
-- timeout/headless flags from `.env.example`
+| Variable | Description |
+|---|---|
+| `PROD_URL` | Target environment base URL |
+| `TEST_USER_USERNAME` | Test account username |
+| `TEST_USER_PASSWORD` | Test account password |
+| `TEST_USER_EMAIL` | Test account email |
+| `TEST_USER_NEW_PASSWORD` | Password used in change-password flows |
 
-## 7. Run Commands
+**Optional:**
+
+| Variable | Description |
+|---|---|
+| `TEST_API_KEY` | API key for test-hook endpoints (non-production) |
+| `STOCK_RESET_API_KEY` | API key for production stock reset calls |
+| Timeout / headless flags | See `.env.example` for full list |
+
+---
+
+## Running Tests
+
+**Run all tests:**
 
 ```bash
 npm test
+```
+
+**Run by suite:**
+
+```bash
 npm run test:smoke
 npm run test:e2e
 npm run test:api
@@ -122,68 +149,85 @@ npm run test:a11y
 npm run test:mobile
 ```
 
-Tag filter:
+**Filter by tag:**
 
 ```bash
 TAGS='@api,@smoke' npm test
 ```
 
-Tag exclusion:
+**Exclude tags:**
 
 ```bash
 TAGS='@regression' EXCLUDE_TAGS='@destructive' npm test
 ```
 
-## 8. Reports
+---
+
+## Reports
+
+Generate and open an Allure report:
 
 ```bash
 npm run report:allure
 ```
 
-or:
+Or step by step:
 
 ```bash
 npm run report:allure:generate
 npm run report:allure:open
 ```
 
-## 9. CI/CD
+---
 
-Workflow file: `.github/workflows/ci.yml`
+## CI/CD
 
-Current mode:
+Workflow: `.github/workflows/ci.yml`
 
-- Manual trigger (`workflow_dispatch`)
-- Production smoke focus
-- Uses `@smoke`, excludes `@destructive`, runs on `chrome`
+**Current configuration:**
+- Trigger: Manual (`workflow_dispatch`)
+- Scope: Production smoke tests (`@smoke`, excludes `@destructive`)
+- Browser: `chrome`
 
-Required repository settings:
+**Required GitHub repository settings:**
 
-- Variables: `NEEDLY_PROD_URL`, `NEEDLY_PROD_SMOKE_USER_USERNAME`, `NEEDLY_PROD_SMOKE_USER_EMAIL`
-- Secrets: `NEEDLY_PROD_SMOKE_USER_PASSWORD`, `NEEDLY_PROD_SMOKE_USER_NEW_PASSWORD`
+| Type | Key |
+|---|---|
+| Variable | `NEEDLY_PROD_URL` |
+| Variable | `NEEDLY_PROD_SMOKE_USER_USERNAME` |
+| Variable | `NEEDLY_PROD_SMOKE_USER_EMAIL` |
+| Secret | `NEEDLY_PROD_SMOKE_USER_PASSWORD` |
+| Secret | `NEEDLY_PROD_SMOKE_USER_NEW_PASSWORD` |
 
-## 10. Stock Reset API
+---
 
-Primary endpoints:
+## Stock Reset API
 
-- `POST /api/test/set-stock`
-- `POST /api/test/reset-stock`
+Used to control inventory state during test runs.
 
-Access model:
+**Endpoints:**
 
-- Non-production: `x-test-api-key` (`TEST_API_KEY`)
-- Production: `x-stock-reset-key` (`STOCK_RESET_API_KEY`) with `STOCK_RESET_ENABLED=true`
-- Optional production restriction: `STOCK_RESET_IP_ALLOWLIST`
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/api/test/set-stock` | Set stock to a specific value |
+| `POST` | `/api/test/reset-stock` | Reset stock to default |
 
-Example (production):
+**Authentication:**
+
+| Environment | Header | Variable |
+|---|---|---|
+| Non-production | `x-test-api-key` | `TEST_API_KEY` |
+| Production | `x-stock-reset-key` | `STOCK_RESET_API_KEY` (requires `STOCK_RESET_ENABLED=true`) |
+
+> **Note:** For production calls, you can restrict access further by setting `STOCK_RESET_IP_ALLOWLIST`.
+
+**Example — production reset:**
 
 ```bash
 curl -X POST "$PROD_URL/api/test/reset-stock" \
   -H "Content-Type: application/json" \
   -H "x-stock-reset-key: $STOCK_RESET_API_KEY" \
-  -d '{"stock":50}'
+  -d '{"stock": 50}'
 ```
 
-Postman note:
-
-- Put `x-stock-reset-key` in `Headers`, not in query `Params`.
+> **Postman:** Place `x-stock-reset-key` in the **Headers** tab, not in query **Params**.
