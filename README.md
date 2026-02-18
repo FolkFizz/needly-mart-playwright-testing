@@ -264,6 +264,7 @@ Requirements on the web app side:
   `STOCK_RESET_ENABLED=true` + `x-stock-reset-key` = `STOCK_RESET_API_KEY`
 - Optional production restriction:
   `STOCK_RESET_IP_ALLOWLIST` to restrict caller IPs
+- Set key values without surrounding quotes (for example `abc123`, not `"abc123"`)
 
 Reset one product:
 
@@ -291,6 +292,25 @@ curl -X POST "$PROD_URL/api/test/reset-stock" \
   -H "x-stock-reset-key: $STOCK_RESET_API_KEY" \
   -d '{"stock":50}'
 ```
+
+Postman example (`/api/test/reset-stock`):
+
+1. Method: `POST`
+2. URL: `$PROD_URL/api/test/reset-stock`
+3. `Headers` tab:
+   - `x-stock-reset-key: <same value as STOCK_RESET_API_KEY>`
+   - `Content-Type: application/json`
+4. `Body` tab -> `raw` -> `JSON`:
+
+```json
+{
+  "stock": 50
+}
+```
+
+Common mistake:
+
+- Do not put `x-stock-reset-key` in `Params` (query string). Put it in `Headers`.
 
 Alternative bulk reset loop via `set-stock` (PowerShell):
 
