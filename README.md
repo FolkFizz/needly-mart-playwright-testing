@@ -141,9 +141,12 @@ Lean rule:
 - `tests/e2e/06-inbox-lifecycle.e2e.spec.ts`
 - `tests/e2e/07-access-control-and-guard.e2e.spec.ts`
 - `tests/e2e/08-mobile-flow.e2e.spec.ts`
-- `tests/integration/01-auth.integration.spec.ts`
-- `tests/integration/02-forgot-reset.integration.spec.ts`
-- `tests/integration/03-platform.integration.spec.ts`
+- `tests/integration/01-auth-session.integration.spec.ts`
+- `tests/integration/02-forgot-reset-inbox.integration.spec.ts`
+- `tests/integration/03-cart-checkout-order.integration.spec.ts`
+- `tests/integration/04-postorder-profile-claims.integration.spec.ts`
+- `tests/integration/05-platform-and-guards.integration.spec.ts`
+- `tests/integration/06-test-hooks-and-stock-reset.integration.spec.ts`
 - `tests/security/01-auth.security.spec.ts`
 - `tests/security/02-demo-inbox.security.spec.ts`
 - `tests/security/03-platform.security.spec.ts`
