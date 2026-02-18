@@ -1,105 +1,38 @@
-import { runtime } from '@config/env';
+import { accounts } from '@data/accounts';
+import { securityData } from '@data/security';
 import { test, expect } from '@fixtures/test.base';
-
-const pickInStockProductId = async (
-  productsApi: { list: () => Promise<import('@playwright/test').APIResponse> }
-) => {
-  const response = await productsApi.list();
-  expect(response.status()).toBe(200);
-
-  const body = await response.json();
-  const products: Array<{ id: number; stock: number }> = Array.isArray(body.products)
-    ? body.products
-    : [];
-  const candidate = products.find((product) => Number(product.stock) > 0);
-
-  if (!candidate) {
-    throw new Error('No in-stock product found for security order flow');
-  }
-
-  return Number(candidate.id);
-};
-
-const createOrderForInvoice = async ({
-  cartApi,
-  productsApi,
-  ordersApi
-}: {
-  cartApi: {
-    clear: () => Promise<import('@playwright/test').APIResponse>;
-    add: (productId: number, quantity?: number) => Promise<import('@playwright/test').APIResponse>;
-  };
-  productsApi: { list: () => Promise<import('@playwright/test').APIResponse> };
-  ordersApi: {
-    authorizeMockPayment: (input: {
-      cardNumber: string;
-      expMonth: string;
-      expYear: string;
-      cvv: string;
-    }) => Promise<import('@playwright/test').APIResponse>;
-    placeMockOrder: (input: {
-      paymentToken: string;
-      name: string;
-      email: string;
-      address: string;
-    }) => Promise<import('@playwright/test').APIResponse>;
-  };
-}) => {
-  expect((await cartApi.clear()).status()).toBe(200);
-
-  const productId = await pickInStockProductId(productsApi);
-  expect((await cartApi.add(productId, 1)).status()).toBe(200);
-
-  const authorizeResponse = await ordersApi.authorizeMockPayment({
-    cardNumber: '4242 4242 4242 4242',
-    expMonth: '12',
-    expYear: '35',
-    cvv: '123'
-  });
-  expect(authorizeResponse.status()).toBe(200);
-  const authorizeBody = await authorizeResponse.json();
-  expect(authorizeBody.ok).toBe(true);
-  expect(String(authorizeBody.token || '')).not.toBe('');
-
-  const placeResponse = await ordersApi.placeMockOrder({
-    paymentToken: String(authorizeBody.token),
-    name: runtime.user.username,
-    email: runtime.user.email,
-    address: 'QA Security Street'
-  });
-  expect(placeResponse.status()).toBe(200);
-
-  const placeBody = await placeResponse.json();
-  expect(placeBody.ok).toBe(true);
-  expect(String(placeBody.orderId || '')).toContain('ORD-');
-  return String(placeBody.orderId);
-};
+import { createApprovedOrder, pickInStockProductId } from '@helpers/integration-flow';
 
 test.describe('ACCESSCONTROL :: Security Access Control And Ownership', () => {
   test.describe('positive cases', () => {
     test(
       'ACCESSSEC-P01: authenticated user can access me endpoint @smoke @security @safe',
       async ({ authApi }) => {
-        expect((await authApi.login(runtime.user.username, runtime.user.password)).status()).toBe(200);
+        expect((await authApi.login(accounts.primary.username, accounts.primary.password)).status()).toBe(
+          securityData.status.ok
+        );
 
         const response = await authApi.me();
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(securityData.status.ok);
 
         const body = await response.json();
         expect(body.ok).toBe(true);
-        expect(String(body.user?.username || '')).toBe(runtime.user.username);
+        expect(String(body.user?.username || '')).toBe(accounts.primary.username);
       }
     );
 
     test(
       'ACCESSSEC-P02: authenticated user can open own invoice page @security @regression @safe',
       async ({ authApi, cartApi, productsApi, ordersApi }) => {
-        expect((await authApi.login(runtime.user.username, runtime.user.password)).status()).toBe(200);
-        const orderId = await createOrderForInvoice({ cartApi, productsApi, ordersApi });
+        expect((await authApi.login(accounts.primary.username, accounts.primary.password)).status()).toBe(
+          securityData.status.ok
+        );
+        const productId = await pickInStockProductId(productsApi);
+        const orderId = await createApprovedOrder({ cartApi, ordersApi, productId });
 
         const invoiceResponse = await ordersApi.getInvoicePage(orderId);
-        expect(invoiceResponse.status()).toBe(200);
-        expect(await invoiceResponse.text()).toContain('data-testid="invoice-page"');
+        expect(invoiceResponse.status()).toBe(securityData.status.ok);
+        expect(await invoiceResponse.text()).toContain(securityData.headers.responseMarkers.invoicePage);
       }
     );
   });
@@ -110,7 +43,7 @@ test.describe('ACCESSCONTROL :: Security Access Control And Ownership', () => {
       async ({ authApi }) => {
         await authApi.logout();
         const response = await authApi.me();
-        expect(response.status()).toBe(401);
+        expect(response.status()).toBe(securityData.status.unauthorized);
       }
     );
 
@@ -119,14 +52,13 @@ test.describe('ACCESSCONTROL :: Security Access Control And Ownership', () => {
       async ({ authApi, request }) => {
         await authApi.logout();
 
-        const protectedRoutes = ['/profile?tab=info', '/order/checkout', '/inbox', '/claim'];
-        for (const route of protectedRoutes) {
+        for (const route of securityData.routes.protectedHtmlGuards) {
           const response = await request.get(route, {
-            headers: { Accept: 'text/html' }
+            headers: { Accept: securityData.headers.accept.html }
           });
 
-          expect(response.status()).toBe(200);
-          expect(await response.text()).toContain('data-testid="login-page"');
+          expect(response.status()).toBe(securityData.status.ok);
+          expect(await response.text()).toContain(securityData.headers.responseMarkers.loginPage);
         }
       }
     );
@@ -136,19 +68,21 @@ test.describe('ACCESSCONTROL :: Security Access Control And Ownership', () => {
     test(
       'ACCESSSEC-E01: authenticated requests for non-owned resources return not-found style response @security @regression @safe',
       async ({ authApi, request }) => {
-        expect((await authApi.login(runtime.user.username, runtime.user.password)).status()).toBe(200);
+        expect((await authApi.login(accounts.primary.username, accounts.primary.password)).status()).toBe(
+          securityData.status.ok
+        );
 
-        const invoiceResponse = await request.get('/order/invoice/ORD-9999999999999-999', {
-          headers: { Accept: 'text/html' }
+        const invoiceResponse = await request.get(securityData.routes.unknownInvoice, {
+          headers: { Accept: securityData.headers.accept.html }
         });
-        expect(invoiceResponse.status()).toBe(404);
-        expect(await invoiceResponse.text()).toContain('data-testid="not-found-page"');
+        expect(invoiceResponse.status()).toBe(securityData.status.notFound);
+        expect(await invoiceResponse.text()).toContain(securityData.headers.responseMarkers.notFoundPage);
 
-        const evidenceResponse = await request.get('/profile/claims/99999999/evidence', {
-          headers: { Accept: 'text/html' }
+        const evidenceResponse = await request.get(securityData.routes.unknownClaimEvidence, {
+          headers: { Accept: securityData.headers.accept.html }
         });
-        expect(evidenceResponse.status()).toBe(404);
-        expect(await evidenceResponse.text()).toContain('data-testid="not-found-page"');
+        expect(evidenceResponse.status()).toBe(securityData.status.notFound);
+        expect(await evidenceResponse.text()).toContain(securityData.headers.responseMarkers.notFoundPage);
       }
     );
   });

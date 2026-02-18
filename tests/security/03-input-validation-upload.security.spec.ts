@@ -1,52 +1,34 @@
+import { accounts } from '@data/accounts';
+import { securityData } from '@data/security';
+import { ROUTE } from '@config/routes';
 import { buildInvoiceId } from '@helpers/factories';
-import { runtime } from '@config/env';
+import { pickInStockProductId } from '@helpers/integration-flow';
 import { test, expect } from '@fixtures/test.base';
-
-const pickInStockProductId = async (
-  productsApi: { list: () => Promise<import('@playwright/test').APIResponse> }
-) => {
-  const response = await productsApi.list();
-  expect(response.status()).toBe(200);
-
-  const body = await response.json();
-  const products: Array<{ id: number; stock: number }> = Array.isArray(body.products)
-    ? body.products
-    : [];
-  const candidate = products.find((product) => Number(product.stock) > 0);
-
-  if (!candidate) {
-    throw new Error('No in-stock product found for validation tests');
-  }
-
-  return Number(candidate.id);
-};
 
 test.describe('INPUTVALIDATION :: Security Input Validation And Upload Hardening', () => {
   test.beforeEach(async ({ authApi, cartApi }) => {
-    expect((await authApi.login(runtime.user.username, runtime.user.password)).status()).toBe(200);
-    expect((await cartApi.clear()).status()).toBe(200);
+    expect((await authApi.login(accounts.primary.username, accounts.primary.password)).status()).toBe(
+      securityData.status.ok
+    );
+    expect((await cartApi.clear()).status()).toBe(securityData.status.ok);
   });
 
   test.describe('positive cases', () => {
     test(
       'INPUTSEC-P01: claim endpoint accepts valid png evidence upload @security @regression @safe',
       async ({ request }) => {
-        const response = await request.post('/claim', {
-          maxRedirects: 0,
-          headers: { Accept: 'text/html' },
+        const response = await request.post(securityData.routes.claim, {
+          maxRedirects: securityData.numbers.zero,
+          headers: { Accept: securityData.headers.accept.html },
           multipart: {
             invoice_id: buildInvoiceId(),
-            description: 'Valid image upload from security suite',
-            image: {
-              name: 'security-proof.png',
-              mimeType: 'image/png',
-              buffer: Buffer.from('89504E470D0A1A0A', 'hex')
-            }
+            description: securityData.claims.validUploadDescription,
+            image: securityData.claims.validUpload
           }
         });
 
-        expect(response.status()).toBe(302);
-        expect(String(response.headers().location || '')).toContain('/profile?tab=claims');
+        expect(response.status()).toBe(securityData.status.redirect);
+        expect(String(response.headers().location || '')).toContain(ROUTE.profile('claims'));
       }
     );
   });
@@ -55,11 +37,11 @@ test.describe('INPUTVALIDATION :: Security Input Validation And Upload Hardening
     test(
       'INPUTSEC-N01: cart add api rejects invalid product id format @security @regression @safe',
       async ({ request }) => {
-        const response = await request.post('/api/cart/add', {
-          data: { productId: 'not-a-number', quantity: 1 },
-          headers: { Accept: 'application/json' }
+        const response = await request.post(securityData.routes.apiCartAdd, {
+          data: { productId: securityData.invalid.productIdText, quantity: securityData.numbers.one },
+          headers: { Accept: securityData.headers.accept.json }
         });
-        expect(response.status()).toBe(400);
+        expect(response.status()).toBe(securityData.status.badRequest);
 
         const body = await response.json();
         expect(body.ok).toBe(false);
@@ -70,10 +52,10 @@ test.describe('INPUTVALIDATION :: Security Input Validation And Upload Hardening
       'INPUTSEC-N02: cart item patch rejects non-positive quantity @security @regression @safe',
       async ({ cartApi, productsApi }) => {
         const productId = await pickInStockProductId(productsApi);
-        expect((await cartApi.add(productId, 1)).status()).toBe(200);
+        expect((await cartApi.add(productId, securityData.numbers.one)).status()).toBe(securityData.status.ok);
 
-        const response = await cartApi.updateItem(productId, 0);
-        expect(response.status()).toBe(400);
+        const response = await cartApi.updateItem(productId, securityData.numbers.zero);
+        expect(response.status()).toBe(securityData.status.badRequest);
 
         const body = await response.json();
         expect(body.ok).toBe(false);
@@ -85,44 +67,40 @@ test.describe('INPUTVALIDATION :: Security Input Validation And Upload Hardening
     test(
       'INPUTSEC-E01: claim upload rejects non-image evidence payload @security @regression @safe',
       async ({ request }) => {
-        const response = await request.post('/claim', {
-          maxRedirects: 0,
-          headers: { Accept: 'text/html' },
+        const response = await request.post(securityData.routes.claim, {
+          maxRedirects: securityData.numbers.zero,
+          headers: { Accept: securityData.headers.accept.html },
           multipart: {
             invoice_id: buildInvoiceId(),
-            description: 'Upload text file should fail',
-            image: {
-              name: 'invalid.txt',
-              mimeType: 'text/plain',
-              buffer: Buffer.from('not-an-image')
-            }
+            description: securityData.claims.invalidUploadDescription,
+            image: securityData.claims.invalidUpload
           }
         });
 
-        expect(response.status()).toBe(302);
-        expect(String(response.headers().location || '')).toContain('/claim?error=');
+        expect(response.status()).toBe(securityData.status.redirect);
+        expect(String(response.headers().location || '')).toContain(`${securityData.routes.claim}?error=`);
       }
     );
 
     test(
       'INPUTSEC-E02: claim upload rejects files larger than 5mb @security @regression @safe',
       async ({ request }) => {
-        const response = await request.post('/claim', {
-          maxRedirects: 0,
-          headers: { Accept: 'text/html' },
+        const response = await request.post(securityData.routes.claim, {
+          maxRedirects: securityData.numbers.zero,
+          headers: { Accept: securityData.headers.accept.html },
           multipart: {
             invoice_id: buildInvoiceId(),
-            description: 'Oversized upload should be blocked',
+            description: securityData.claims.oversizedUploadDescription,
             image: {
-              name: 'too-large.png',
-              mimeType: 'image/png',
-              buffer: Buffer.alloc(6 * 1024 * 1024, 1)
+              name: securityData.claims.oversizedUpload.name,
+              mimeType: securityData.claims.oversizedUpload.mimeType,
+              buffer: Buffer.alloc(securityData.claims.oversizedUpload.sizeBytes, securityData.numbers.one)
             }
           }
         });
 
-        expect(response.status()).toBe(302);
-        expect(String(response.headers().location || '')).toContain('/claim?error=');
+        expect(response.status()).toBe(securityData.status.redirect);
+        expect(String(response.headers().location || '')).toContain(`${securityData.routes.claim}?error=`);
       }
     );
   });
