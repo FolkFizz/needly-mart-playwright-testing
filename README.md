@@ -128,13 +128,11 @@ Lean rule:
 
 ## 8. Current Coverage
 
-- `tests/api/01-auth.api.spec.ts`
-- `tests/api/02-register.api.spec.ts`
-- `tests/api/03-catalog.api.spec.ts`
-- `tests/api/04-product-detail.api.spec.ts`
-- `tests/api/05-cart-and-coupon.api.spec.ts`
-- `tests/api/06-checkout-and-order.api.spec.ts`
-- `tests/api/07-platform.api.spec.ts`
+- `tests/api/01-auth-and-user.api.spec.ts`
+- `tests/api/02-catalog-and-products.api.spec.ts`
+- `tests/api/03-cart-coupon-checkout.api.spec.ts`
+- `tests/api/04-order-invoice-access.api.spec.ts`
+- `tests/api/05-platform-and-test-hooks.api.spec.ts`
 - `tests/e2e/01-auth-lifecycle.e2e.spec.ts`
 - `tests/e2e/02-shopping-lifecycle.e2e.spec.ts`
 - `tests/e2e/03-post-order-lifecycle.e2e.spec.ts`
