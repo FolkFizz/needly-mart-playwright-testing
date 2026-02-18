@@ -23,7 +23,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run typecheck
-      - run: TAGS='@smoke' EXCLUDE_TAGS='@destructive' npm test
+      - run: TAGS='@smoke' EXCLUDE_TAGS='@destructive' npx playwright test --project=chrome
       - uses: actions/upload-artifact@v4
         if: always()
         with:

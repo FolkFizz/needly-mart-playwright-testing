@@ -119,6 +119,7 @@ Current 16-flow matrix (risk-based):
 - `14-platform-api-baseline`: `api`
 - `15-security-baseline`: `security`
 - `16-health-resilience`: `api`, `integration`
+- `17-mobile-layout-and-zoom`: `e2e`, `a11y`
 
 Lean rule:
 
@@ -134,16 +135,14 @@ Lean rule:
 - `tests/api/05-cart-and-coupon.api.spec.ts`
 - `tests/api/06-checkout-and-order.api.spec.ts`
 - `tests/api/07-platform.api.spec.ts`
-- `tests/e2e/01-auth.e2e.spec.ts`
-- `tests/e2e/02-register.e2e.spec.ts`
-- `tests/e2e/03-catalog.e2e.spec.ts`
-- `tests/e2e/04-product-detail.e2e.spec.ts`
-- `tests/e2e/05-cart-and-coupon.e2e.spec.ts`
-- `tests/e2e/06-checkout-and-order.e2e.spec.ts`
-- `tests/e2e/07-order-history-and-invoice.e2e.spec.ts`
-- `tests/e2e/08-profile.e2e.spec.ts`
-- `tests/e2e/09-claims-and-upload.e2e.spec.ts`
-- `tests/e2e/10-inbox-and-demo-inbox.e2e.spec.ts`
+- `tests/e2e/01-auth-lifecycle.e2e.spec.ts`
+- `tests/e2e/02-shopping-lifecycle.e2e.spec.ts`
+- `tests/e2e/03-post-order-lifecycle.e2e.spec.ts`
+- `tests/e2e/04-claims-lifecycle.e2e.spec.ts`
+- `tests/e2e/05-profile-lifecycle.e2e.spec.ts`
+- `tests/e2e/06-inbox-lifecycle.e2e.spec.ts`
+- `tests/e2e/07-access-control-and-guard.e2e.spec.ts`
+- `tests/e2e/08-mobile-flow.e2e.spec.ts`
 - `tests/integration/01-auth.integration.spec.ts`
 - `tests/integration/02-forgot-reset.integration.spec.ts`
 - `tests/integration/03-platform.integration.spec.ts`
@@ -152,6 +151,7 @@ Lean rule:
 - `tests/security/03-platform.security.spec.ts`
 - `tests/a11y/01-auth.a11y.spec.ts`
 - `tests/a11y/02-checkout-and-profile.a11y.spec.ts`
+- `tests/a11y/03-mobile-layout-and-zoom.a11y.spec.ts`
 
 Every spec follows:
 
@@ -233,7 +233,7 @@ Workflow: `.github/workflows/ci.yml`
 - Temporary mode: `prod-smoke-only`
 - Trigger: manual only (`workflow_dispatch`)
 - Job: `Smoke (Production Safe)` only
-- Scope: `@smoke` with `@destructive` excluded
+- Scope: `@smoke` with `@destructive` excluded, forced to `--project=chrome`
 
 GitHub variables/secrets expected:
 

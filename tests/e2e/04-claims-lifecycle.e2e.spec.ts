@@ -1,8 +1,8 @@
-import { test, expect } from '@fixtures/test.base';
 import { runtime } from '@config/env';
+import { test, expect } from '@fixtures/test.base';
 import { buildInvoiceId } from '@helpers/factories';
 
-test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
+test.describe('CLAIMS :: UI Claims Lifecycle', () => {
   test.beforeEach(async ({ authPage }) => {
     await authPage.gotoLogin();
     await authPage.login(runtime.user.username, runtime.user.password);
@@ -11,26 +11,15 @@ test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
 
   test.describe('positive cases', () => {
     test(
-      'CLAIMS-P01: user can submit claim with valid image evidence @e2e @regression @destructive',
-      async ({ claimPage, profilePage }) => {
-        await claimPage.gotoClaim();
+      'CLAIMS-P01: user can submit a new claim with image evidence from profile claims tab @e2e @regression @destructive',
+      async ({ profilePage, claimPage }) => {
+        await profilePage.gotoProfile('claims');
+        await profilePage.openFileNewClaim();
+
         await claimPage.fillInvoiceId(buildInvoiceId());
-        await claimPage.fillDescription('Product failed during normal use.');
+        await claimPage.fillDescription('Image evidence claim from e2e lifecycle flow.');
         await claimPage.uploadImageEvidence();
         await claimPage.submit();
-
-        await profilePage.openClaimsTab();
-        const claimId = await profilePage.readFirstClaimId();
-        expect(claimId).not.toBeNull();
-        await profilePage.assertClaimCardVisible(Number(claimId));
-      }
-    );
-
-    test(
-      'CLAIMS-P02: user can submit claim without image evidence @e2e @regression @destructive',
-      async ({ claimPage, profilePage }) => {
-        await claimPage.gotoClaim();
-        await claimPage.submitClaim(buildInvoiceId(), 'Claim without image attachment');
 
         await profilePage.openClaimsTab();
         const claimId = await profilePage.readFirstClaimId();
@@ -42,11 +31,11 @@ test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
 
   test.describe('negative cases', () => {
     test(
-      'CLAIMS-N01: upload with non-image file type is rejected @e2e @regression @safe',
+      'CLAIMS-N01: non-image evidence upload is rejected by claim form validation @e2e @regression @safe',
       async ({ claimPage }) => {
         await claimPage.gotoClaim();
         await claimPage.fillInvoiceId(buildInvoiceId());
-        await claimPage.fillDescription('This should fail because file type is invalid.');
+        await claimPage.fillDescription('This claim should fail because the file type is invalid.');
         await claimPage.uploadInvalidEvidenceFile();
         await claimPage.submit();
         await claimPage.assertErrorContains('Only image files are allowed');
@@ -54,7 +43,7 @@ test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
     );
 
     test(
-      'CLAIMS-N02: claim submit without description is rejected @e2e @regression @safe',
+      'CLAIMS-N02: submitting claim without description is blocked @e2e @regression @safe',
       async ({ claimPage }) => {
         await claimPage.gotoClaim();
         await claimPage.submitClaim(buildInvoiceId(), '');
@@ -65,14 +54,21 @@ test.describe('CLAIMS :: UI Claim Submission And Upload', () => {
 
   test.describe('edge cases', () => {
     test(
-      'CLAIMS-E01: claim accepts invoice id with special characters without crashing @e2e @regression @destructive',
+      'CLAIMS-E01: claim can be moved to trash and restored without data loss @e2e @regression @destructive',
       async ({ claimPage, profilePage }) => {
         await claimPage.gotoClaim();
-        await claimPage.submitClaim(`ORD-EDGE-${Date.now()}-#%25`, 'Edge invoice format check.');
+        await claimPage.submitClaim(buildInvoiceId(), 'Edge claim for trash and restore lifecycle check.');
 
         await profilePage.openClaimsTab();
         const claimId = await profilePage.readFirstClaimId();
         expect(claimId).not.toBeNull();
+
+        await profilePage.moveClaimToTrash(Number(claimId));
+        await profilePage.openClaimTrashTab();
+        await profilePage.assertClaimCardVisible(Number(claimId));
+
+        await profilePage.restoreClaimFromTrash(Number(claimId));
+        await profilePage.openClaimInboxTab();
         await profilePage.assertClaimCardVisible(Number(claimId));
       }
     );

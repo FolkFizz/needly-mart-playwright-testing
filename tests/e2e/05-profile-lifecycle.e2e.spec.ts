@@ -1,7 +1,7 @@
-import { test, expect } from '@fixtures/test.base';
 import { runtime } from '@config/env';
+import { test, expect } from '@fixtures/test.base';
 
-test.describe('PROFILE :: UI Profile Management', () => {
+test.describe('PROFILE :: UI Profile Lifecycle', () => {
   test.beforeEach(async ({ authPage, profilePage }) => {
     await authPage.gotoLogin();
     await authPage.login(runtime.user.username, runtime.user.password);
@@ -11,7 +11,7 @@ test.describe('PROFILE :: UI Profile Management', () => {
 
   test.describe('positive cases', () => {
     test(
-      'PROFILE-P01: user can update address and phone successfully @e2e @regression @destructive',
+      'PROFILE-P01: user can update profile and navigate all profile tabs @e2e @regression @destructive',
       async ({ profilePage }) => {
         await profilePage.updateProfile(
           runtime.user.email,
@@ -19,12 +19,7 @@ test.describe('PROFILE :: UI Profile Management', () => {
           `08${Math.floor(10000000 + Math.random() * 89999999)}`
         );
         await profilePage.assertSuccessContains('Profile updated');
-      }
-    );
 
-    test(
-      'PROFILE-P02: user can navigate profile tabs without breaking layout @e2e @regression @safe',
-      async ({ profilePage }) => {
         await profilePage.openOrdersTab();
         await profilePage.openClaimsTab();
         await profilePage.openInfoTab();
@@ -34,28 +29,19 @@ test.describe('PROFILE :: UI Profile Management', () => {
 
   test.describe('negative cases', () => {
     test(
-      'PROFILE-N01: profile update rejects duplicate email from another account @e2e @regression @safe',
+      'PROFILE-N01: updating profile with duplicate email is rejected @e2e @regression @safe',
       async ({ profilePage }) => {
-        await profilePage.updateProfile('qauser@needlymart.com', 'Duplicate Email Address Check', '0811111111');
+        await profilePage.updateProfile('qauser@needlymart.com', 'Duplicate Email Validation', '0811111111');
         await profilePage.assertErrorContains('Email is already in use');
-      }
-    );
-
-    test(
-      'PROFILE-N02: unauthenticated user cannot access profile page @e2e @regression @safe',
-      async ({ authPage, page }) => {
-        await authPage.logout();
-        await page.goto('/profile?tab=info');
-        await authPage.assertLoginPageVisible();
       }
     );
   });
 
   test.describe('edge cases', () => {
     test(
-      'PROFILE-E01: profile email is normalized to lowercase on save @e2e @regression @destructive',
+      'PROFILE-E01: profile email is normalized to lowercase and trimmed after save @e2e @regression @destructive',
       async ({ profilePage }) => {
-        await profilePage.updateProfile(`  ${runtime.user.email.toUpperCase()}  `, 'Normalize Email Check', '0822222222');
+        await profilePage.updateProfile(`  ${runtime.user.email.toUpperCase()}  `, 'Normalize Email Edge Case', '0822222222');
         await profilePage.assertSuccessContains('Profile updated');
         expect(await profilePage.readEmailValue()).toBe(runtime.user.email.toLowerCase());
       }
