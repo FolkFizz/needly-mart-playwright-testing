@@ -230,13 +230,17 @@ npm run report:allure:open
 
 Workflow: `.github/workflows/ci.yml`
 
-- `Smoke`: PR/push/manual, runs typecheck + smoke tests
-- `Full Regression`: schedule/manual, runs full suite
+- Temporary mode: `prod-smoke-only`
+- Trigger: manual only (`workflow_dispatch`)
+- Job: `Smoke (Production Safe)` only
+- Scope: `@smoke` with `@destructive` excluded
 
 GitHub variables/secrets expected:
 
-- Variables: `NEEDLY_PROD_URL`, `NEEDLY_TEST_USER_USERNAME`, `NEEDLY_TEST_USER_EMAIL`
-- Secrets: `NEEDLY_TEST_USER_PASSWORD`, `NEEDLY_TEST_USER_NEW_PASSWORD`
+- Production smoke variables: `NEEDLY_PROD_URL`,
+  `NEEDLY_PROD_SMOKE_USER_USERNAME`, `NEEDLY_PROD_SMOKE_USER_EMAIL`
+- Production smoke secrets: `NEEDLY_PROD_SMOKE_USER_PASSWORD`,
+  `NEEDLY_PROD_SMOKE_USER_NEW_PASSWORD`
 
 ## 14. Scaling Rules
 
