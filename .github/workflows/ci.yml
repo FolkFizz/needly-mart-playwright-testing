@@ -14,8 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'schedule'
     env:
-      BASE_URL: ${{ vars.NEEDLY_BASE_URL }}
-      API_BASE_URL: ${{ vars.NEEDLY_API_BASE_URL || vars.NEEDLY_BASE_URL }}
+      PROD_URL: ${{ vars.NEEDLY_PROD_URL }}
       TEST_USER_USERNAME: ${{ vars.NEEDLY_TEST_USER_USERNAME }}
       TEST_USER_PASSWORD: ${{ secrets.NEEDLY_TEST_USER_PASSWORD }}
       TEST_USER_EMAIL: ${{ vars.NEEDLY_TEST_USER_EMAIL }}
@@ -45,8 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     env:
-      BASE_URL: ${{ vars.NEEDLY_BASE_URL }}
-      API_BASE_URL: ${{ vars.NEEDLY_API_BASE_URL || vars.NEEDLY_BASE_URL }}
+      PROD_URL: ${{ vars.NEEDLY_PROD_URL }}
       TEST_USER_USERNAME: ${{ vars.NEEDLY_TEST_USER_USERNAME }}
       TEST_USER_PASSWORD: ${{ secrets.NEEDLY_TEST_USER_PASSWORD }}
       TEST_USER_EMAIL: ${{ vars.NEEDLY_TEST_USER_EMAIL }}

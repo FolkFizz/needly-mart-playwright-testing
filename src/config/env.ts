@@ -17,11 +17,10 @@ const pick = (key: string, fallback: string): string => {
   return value && value.trim().length > 0 ? value.trim() : fallback;
 };
 
-const baseUrl = pick('BASE_URL', 'https://needly-mart-web.onrender.com');
+const baseUrl = pick('PROD_URL', 'https://needly-mart-web.onrender.com');
 
 export const runtime = {
   baseUrl,
-  apiBaseUrl: pick('API_BASE_URL', baseUrl),
   headless: toBool(process.env.HEADLESS, true),
   user: {
     username: pick('TEST_USER_USERNAME', 'user'),

@@ -18,6 +18,7 @@ Minimal, stable QA automation framework for **Needly Mart** using **Playwright +
 - [12. Allure Reporting](#12-allure-reporting)
 - [13. CI/CD](#13-cicd)
 - [14. Scaling Rules](#14-scaling-rules)
+- [15. Tester Stock Reset API](#15-tester-stock-reset-api)
 
 ## 1. Objectives
 
@@ -175,7 +176,7 @@ cp .env.example .env
 
 Required:
 
-- `BASE_URL`
+- `PROD_URL`
 - `TEST_USER_USERNAME`
 - `TEST_USER_PASSWORD`
 - `TEST_USER_EMAIL`
@@ -183,8 +184,8 @@ Required:
 
 Optional:
 
-- `API_BASE_URL` (defaults to `BASE_URL`)
 - `TEST_API_KEY` (used by test-hook endpoint checks when available)
+- `STOCK_RESET_API_KEY` (only for manual production stock-reset API calls)
 - timeout/headless flags from `.env.example`
 
 ## 11. Run Commands
@@ -234,7 +235,7 @@ Workflow: `.github/workflows/ci.yml`
 
 GitHub variables/secrets expected:
 
-- Variables: `NEEDLY_BASE_URL`, `NEEDLY_API_BASE_URL`, `NEEDLY_TEST_USER_USERNAME`, `NEEDLY_TEST_USER_EMAIL`
+- Variables: `NEEDLY_PROD_URL`, `NEEDLY_TEST_USER_USERNAME`, `NEEDLY_TEST_USER_EMAIL`
 - Secrets: `NEEDLY_TEST_USER_PASSWORD`, `NEEDLY_TEST_USER_NEW_PASSWORD`
 
 ## 14. Scaling Rules
@@ -244,3 +245,70 @@ GitHub variables/secrets expected:
 - Keep UI selectors in `src/selectors/` and use them only through POM/helper methods.
 - Prefer tags for run strategy and report grouping.
 - Prefer merged specs over many tiny specs when they test the same risk surface.
+
+## 15. Tester Stock Reset API
+
+When destructive test runs consume product stock, the preferred workflow is for testers
+to reset stock by API (instead of resetting the full database).
+
+Backend endpoint used:
+
+- `POST /api/test/set-stock`
+- `POST /api/test/reset-stock`
+
+Requirements on the web app side:
+
+- Non-production:
+  `TEST_MODE=true` (or `NODE_ENV=test`) + `x-test-api-key` = `TEST_API_KEY`
+- Production:
+  `STOCK_RESET_ENABLED=true` + `x-stock-reset-key` = `STOCK_RESET_API_KEY`
+- Optional production restriction:
+  `STOCK_RESET_IP_ALLOWLIST` to restrict caller IPs
+
+Reset one product:
+
+```bash
+curl -X POST "$PROD_URL/api/test/set-stock" \
+  -H "Content-Type: application/json" \
+  -H "x-test-api-key: $TEST_API_KEY" \
+  -d '{"productId":1,"stock":50}'
+```
+
+Reset all products to one constant stock value (single call):
+
+```bash
+curl -X POST "$PROD_URL/api/test/reset-stock" \
+  -H "Content-Type: application/json" \
+  -H "x-test-api-key: $TEST_API_KEY" \
+  -d '{"stock":50}'
+```
+
+Production reset example:
+
+```bash
+curl -X POST "$PROD_URL/api/test/reset-stock" \
+  -H "Content-Type: application/json" \
+  -H "x-stock-reset-key: $STOCK_RESET_API_KEY" \
+  -d '{"stock":50}'
+```
+
+Alternative bulk reset loop via `set-stock` (PowerShell):
+
+```powershell
+$baseUrl = $env:PROD_URL
+$apiKey = $env:TEST_API_KEY
+$seedStock = 50
+
+$products = (Invoke-RestMethod -Method GET -Uri "$baseUrl/api/products").products
+foreach ($product in $products) {
+  Invoke-RestMethod -Method POST -Uri "$baseUrl/api/test/set-stock" `
+    -Headers @{ "x-test-api-key" = $apiKey } `
+    -ContentType "application/json" `
+    -Body (@{ productId = $product.id; stock = $seedStock } | ConvertTo-Json) | Out-Null
+}
+```
+
+Recommended timing:
+
+- run once before destructive suites (`@destructive`)
+- optionally run again in teardown when your environment is shared
