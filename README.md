@@ -1,76 +1,72 @@
 # Needly Mart Playwright Testing
 
-Minimal, stable QA automation framework for **Needly Mart** using **Playwright + TypeScript + Allure**.
+QA automation framework for Needly Mart using Playwright + TypeScript, with layered coverage across `e2e`, `api`, `integration`, `security`, and `a11y`.
 
 ## Table Of Contents
 
-- [1. Objectives](#1-objectives)
-- [2. Design Principles](#2-design-principles)
-- [3. Stack](#3-stack)
-- [4. Project Structure](#4-project-structure)
-- [5. Naming And Tags](#5-naming-and-tags)
-- [6. Coverage Strategy](#6-coverage-strategy)
-- [7. Business Flow Map](#7-business-flow-map)
-- [8. Current Coverage](#8-current-coverage)
-- [9. Setup](#9-setup)
-- [10. Environment Variables](#10-environment-variables)
-- [11. Run Commands](#11-run-commands)
-- [12. Allure Reporting](#12-allure-reporting)
-- [13. CI/CD](#13-cicd)
-- [14. Scaling Rules](#14-scaling-rules)
-- [15. Tester Stock Reset API](#15-tester-stock-reset-api)
+- [1. Project Summary](#1-project-summary)
+- [2. Test Scope](#2-test-scope)
+- [3. Framework Design](#3-framework-design)
+- [4. Naming And Tags](#4-naming-and-tags)
+- [5. Quick Start](#5-quick-start)
+- [6. Environment Variables](#6-environment-variables)
+- [7. Run Commands](#7-run-commands)
+- [8. Reports](#8-reports)
+- [9. CI/CD](#9-cicd)
+- [10. Stock Reset API](#10-stock-reset-api)
 
-## 1. Objectives
+## 1. Project Summary
 
-- Keep the framework clean and easy to scale.
-- Keep `tests/` as spec-only.
-- Keep business logic outside test scripts.
-- Cover key QA layers: **e2e, api, a11y, security, integration**.
-- Enforce **Positive / Negative / Edge** in every spec file.
+- Purpose: validate core business flows and platform risks of Needly Mart.
+- Language/Runner: TypeScript + Playwright.
+- Report: HTML + Allure.
+- Browser Projects:
+  - Desktop: `chrome`, `webkit`
+  - Mobile: `iphone`, `pixel`
 
-## 2. Design Principles
+## 2. Test Scope
 
-- POM-first for UI actions.
-- Single runtime configuration source: `src/config/env.ts`.
-- Tag-based filtering and grouping (not deep folder logic).
-- No hardcoded host/credential values in specs.
-- Use `test.beforeEach` hooks for shared setup to keep specs short.
-- Keep test titles plain strings and append tags directly in the title text (for example `... @smoke @e2e @safe`).
+Test suites are organized by test type:
 
-## 3. Stack
+- `tests/e2e`: user lifecycle flows (auth, shopping, order, claims, inbox, guards, mobile)
+- `tests/api`: endpoint and contract-level behavior
+- `tests/integration`: multi-step backend/state flows
+- `tests/security`: authz, validation, hardening, operational surfaces
+- `tests/a11y`: accessibility checks using `@axe-core/playwright`
 
-- Playwright
-- TypeScript
-- `@axe-core/playwright`
-- `allure-playwright`
-- GitHub Actions
+Current file count:
 
-## 4. Project Structure
+- `e2e`: 8 spec files
+- `api`: 5 spec files
+- `integration`: 6 spec files
+- `security`: 5 spec files
+- `a11y`: 5 spec files
+
+## 3. Framework Design
 
 ```text
-.github/workflows/
-  ci.yml
-
 src/
-  api/clients/         # API clients/wrappers
-  config/              # env + runtime settings
-  data/                # deterministic test data
-  fixtures/            # test.extend fixtures
-  helpers/             # tag helpers, inbox parsing, utilities
-  pages/               # POM classes (UI only)
-  selectors/           # all UI selectors/test ids in one place
+  api/clients/      # API wrappers
+  config/           # env/routes/runtime config
+  data/             # centralized test constants/data
+  fixtures/         # test.extend fixtures
+  helpers/          # shared utility/flow helpers
+  pages/            # POM classes
+  selectors/        # selector registry
 
-tests/                 # *.spec.ts only
-  api/
-  e2e/
-  integration/
-  security/
-  a11y/
+tests/
+  a11y/ api/ e2e/ integration/ security/   # spec files only
 ```
 
-## 5. Naming And Tags
+Implementation rules:
 
-Name format:
+- UI selectors live in one place (`src/selectors`) and are consumed through POM/helpers.
+- Shared constants and flow helpers are centralized in `src/data` and `src/helpers`.
+- Every spec file follows `positive / negative / edge` structure.
+
+## 4. Naming And Tags
+
+Test title format:
 
 ```text
 <DOMAIN>-<P|N|E><NN>: <behavior> @tag1 @tag2 @tag3
@@ -82,102 +78,22 @@ Example:
 AUTH-P01: login with valid credentials succeeds @smoke @e2e @safe
 ```
 
-Tag groups:
+Primary tags:
 
-- Type: `@e2e`, `@api`, `@a11y`, `@security`, `@integration`
+- Type: `@e2e`, `@api`, `@integration`, `@security`, `@a11y`
 - Suite: `@smoke`, `@regression`
 - Risk: `@safe`, `@destructive`
 - Platform: `@mobile`
 
-## 6. Coverage Strategy
-
-- This project uses **risk-based** coverage, not equal test counts per test type.
-- A flow can exist in only 1-2 test types if that is enough confidence.
-- Similar scenarios should be merged into one spec when behavior overlaps.
-- Numbering (`01-`, `02-`, ...) follows business flow order inside each test-type folder.
-- Keep only tests that protect business risk, security risk, or frequent regressions.
-- Test files must not contain direct locators/selectors.
-- All selector maintenance must happen in `src/selectors/` and be consumed via POM.
-
-## 7. Business Flow Map
-
-Current 16-flow matrix (risk-based):
-
-- `01-auth-login-logout`: `e2e`, `api`, `integration`, `security`, `a11y`
-- `02-register`: `e2e`, `api`
-- `03-forgot-reset-password`: `integration`, `api`, `e2e`
-- `04-catalog-search-filter`: `e2e`, `api`
-- `05-product-detail`: `e2e`, `api`
-- `06-cart`: `e2e`, `api`, `integration`
-- `07-coupon`: `e2e`, `api`
-- `08-checkout-payment`: `e2e`, `api`, `a11y`
-- `09-order-history-invoice`: `e2e`, `integration`
-- `10-profile-update`: `e2e`
-- `11-claims-file-upload`: `e2e`, `security`
-- `12-inbox`: `e2e`
-- `13-demo-inbox-public`: `e2e`, `security`
-- `14-platform-api-baseline`: `api`
-- `15-security-baseline`: `security`
-- `16-health-resilience`: `api`, `integration`
-- `17-mobile-layout-and-zoom`: `e2e`, `a11y`
-
-Lean rule:
-
-- If one `e2e` already validates full flow and there is low backend branching, skip extra integration spec.
-- If a flow is API-first and UI is simple, focus `api` and keep only one smoke `e2e`.
-
-## 8. Current Coverage
-
-- `tests/api/01-auth-and-user.api.spec.ts`
-- `tests/api/02-catalog-and-products.api.spec.ts`
-- `tests/api/03-cart-coupon-checkout.api.spec.ts`
-- `tests/api/04-order-invoice-access.api.spec.ts`
-- `tests/api/05-platform-and-test-hooks.api.spec.ts`
-- `tests/e2e/01-auth-lifecycle.e2e.spec.ts`
-- `tests/e2e/02-shopping-lifecycle.e2e.spec.ts`
-- `tests/e2e/03-post-order-lifecycle.e2e.spec.ts`
-- `tests/e2e/04-claims-lifecycle.e2e.spec.ts`
-- `tests/e2e/05-profile-lifecycle.e2e.spec.ts`
-- `tests/e2e/06-inbox-lifecycle.e2e.spec.ts`
-- `tests/e2e/07-access-control-and-guard.e2e.spec.ts`
-- `tests/e2e/08-mobile-flow.e2e.spec.ts`
-- `tests/integration/01-auth-session.integration.spec.ts`
-- `tests/integration/02-forgot-reset-inbox.integration.spec.ts`
-- `tests/integration/03-cart-checkout-order.integration.spec.ts`
-- `tests/integration/04-postorder-profile-claims.integration.spec.ts`
-- `tests/integration/05-platform-and-guards.integration.spec.ts`
-- `tests/integration/06-test-hooks-and-stock-reset.integration.spec.ts`
-- `tests/security/01-auth-session-reset.security.spec.ts`
-- `tests/security/02-access-control-ownership.security.spec.ts`
-- `tests/security/03-input-validation-upload.security.spec.ts`
-- `tests/security/04-platform-hardening-rate-limit.security.spec.ts`
-- `tests/security/05-test-hooks-operational.security.spec.ts`
-- `tests/a11y/01-auth-and-guard.a11y.spec.ts`
-- `tests/a11y/02-catalog-cart-checkout.a11y.spec.ts`
-- `tests/a11y/03-post-order-profile-claims.a11y.spec.ts`
-- `tests/a11y/04-inbox.a11y.spec.ts`
-- `tests/a11y/05-mobile-and-zoom.a11y.spec.ts`
-
-Every spec follows:
-
-- One top-level `test.describe`
-- Sub-groups: `Positive`, `Negative`, `Edge`
-- Prefix numbering is independent per test type folder (`api`, `e2e`, `integration`, `security`, `a11y`)
-
-## 9. Setup
+## 5. Quick Start
 
 ```bash
 npm install
 npx playwright install --with-deps chromium
-```
-
-Create local env file from template:
-
-```bash
 cp .env.example .env
 ```
 
-## 10. Environment Variables
+## 6. Environment Variables
 
 Required:
 
@@ -189,24 +105,24 @@ Required:
 
 Optional:
 
-- `TEST_API_KEY` (used by test-hook endpoint checks when available)
-- `STOCK_RESET_API_KEY` (only for manual production stock-reset API calls)
+- `TEST_API_KEY` (for test-hook endpoint checks where enabled)
+- `STOCK_RESET_API_KEY` (for production stock reset calls)
 - timeout/headless flags from `.env.example`
 
-## 11. Run Commands
+## 7. Run Commands
 
 ```bash
 npm test
 npm run test:smoke
 npm run test:e2e
 npm run test:api
-npm run test:a11y
-npm run test:security
 npm run test:integration
+npm run test:security
+npm run test:a11y
 npm run test:mobile
 ```
 
-Tag filtering:
+Tag filter:
 
 ```bash
 TAGS='@api,@smoke' npm test
@@ -218,82 +134,48 @@ Tag exclusion:
 TAGS='@regression' EXCLUDE_TAGS='@destructive' npm test
 ```
 
-## 12. Allure Reporting
+## 8. Reports
 
 ```bash
 npm run report:allure
 ```
 
-or
+or:
 
 ```bash
 npm run report:allure:generate
 npm run report:allure:open
 ```
 
-## 13. CI/CD
+## 9. CI/CD
 
-Workflow: `.github/workflows/ci.yml`
+Workflow file: `.github/workflows/ci.yml`
 
-- Temporary mode: `prod-smoke-only`
-- Trigger: manual only (`workflow_dispatch`)
-- Job: `Smoke (Production Safe)` only
-- Scope: `@smoke` with `@destructive` excluded, forced to `--project=chrome`
+Current mode:
 
-GitHub variables/secrets expected:
+- Manual trigger (`workflow_dispatch`)
+- Production smoke focus
+- Uses `@smoke`, excludes `@destructive`, runs on `chrome`
 
-- Production smoke variables: `NEEDLY_PROD_URL`,
-  `NEEDLY_PROD_SMOKE_USER_USERNAME`, `NEEDLY_PROD_SMOKE_USER_EMAIL`
-- Production smoke secrets: `NEEDLY_PROD_SMOKE_USER_PASSWORD`,
-  `NEEDLY_PROD_SMOKE_USER_NEW_PASSWORD`
+Required repository settings:
 
-## 14. Scaling Rules
+- Variables: `NEEDLY_PROD_URL`, `NEEDLY_PROD_SMOKE_USER_USERNAME`, `NEEDLY_PROD_SMOKE_USER_EMAIL`
+- Secrets: `NEEDLY_PROD_SMOKE_USER_PASSWORD`, `NEEDLY_PROD_SMOKE_USER_NEW_PASSWORD`
 
-- Add specs under `tests/` only.
-- Add reusable logic to `src/` only.
-- Keep UI selectors in `src/selectors/` and use them only through POM/helper methods.
-- Prefer tags for run strategy and report grouping.
-- Prefer merged specs over many tiny specs when they test the same risk surface.
+## 10. Stock Reset API
 
-## 15. Tester Stock Reset API
-
-When destructive test runs consume product stock, the preferred workflow is for testers
-to reset stock by API (instead of resetting the full database).
-
-Backend endpoint used:
+Primary endpoints:
 
 - `POST /api/test/set-stock`
 - `POST /api/test/reset-stock`
 
-Requirements on the web app side:
+Access model:
 
-- Non-production:
-  `TEST_MODE=true` (or `NODE_ENV=test`) + `x-test-api-key` = `TEST_API_KEY`
-- Production:
-  `STOCK_RESET_ENABLED=true` + `x-stock-reset-key` = `STOCK_RESET_API_KEY`
-- Optional production restriction:
-  `STOCK_RESET_IP_ALLOWLIST` to restrict caller IPs
-- Set key values without surrounding quotes (for example `abc123`, not `"abc123"`)
+- Non-production: `x-test-api-key` (`TEST_API_KEY`)
+- Production: `x-stock-reset-key` (`STOCK_RESET_API_KEY`) with `STOCK_RESET_ENABLED=true`
+- Optional production restriction: `STOCK_RESET_IP_ALLOWLIST`
 
-Reset one product:
-
-```bash
-curl -X POST "$PROD_URL/api/test/set-stock" \
-  -H "Content-Type: application/json" \
-  -H "x-test-api-key: $TEST_API_KEY" \
-  -d '{"productId":1,"stock":50}'
-```
-
-Reset all products to one constant stock value (single call):
-
-```bash
-curl -X POST "$PROD_URL/api/test/reset-stock" \
-  -H "Content-Type: application/json" \
-  -H "x-test-api-key: $TEST_API_KEY" \
-  -d '{"stock":50}'
-```
-
-Production reset example:
+Example (production):
 
 ```bash
 curl -X POST "$PROD_URL/api/test/reset-stock" \
@@ -302,42 +184,6 @@ curl -X POST "$PROD_URL/api/test/reset-stock" \
   -d '{"stock":50}'
 ```
 
-Postman example (`/api/test/reset-stock`):
+Postman note:
 
-1. Method: `POST`
-2. URL: `$PROD_URL/api/test/reset-stock`
-3. `Headers` tab:
-   - `x-stock-reset-key: <same value as STOCK_RESET_API_KEY>`
-   - `Content-Type: application/json`
-4. `Body` tab -> `raw` -> `JSON`:
-
-```json
-{
-  "stock": 50
-}
-```
-
-Common mistake:
-
-- Do not put `x-stock-reset-key` in `Params` (query string). Put it in `Headers`.
-
-Alternative bulk reset loop via `set-stock` (PowerShell):
-
-```powershell
-$baseUrl = $env:PROD_URL
-$apiKey = $env:TEST_API_KEY
-$seedStock = 50
-
-$products = (Invoke-RestMethod -Method GET -Uri "$baseUrl/api/products").products
-foreach ($product in $products) {
-  Invoke-RestMethod -Method POST -Uri "$baseUrl/api/test/set-stock" `
-    -Headers @{ "x-test-api-key" = $apiKey } `
-    -ContentType "application/json" `
-    -Body (@{ productId = $product.id; stock = $seedStock } | ConvertTo-Json) | Out-Null
-}
-```
-
-Recommended timing:
-
-- run once before destructive suites (`@destructive`)
-- optionally run again in teardown when your environment is shared
+- Put `x-stock-reset-key` in `Headers`, not in query `Params`.
