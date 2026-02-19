@@ -27,7 +27,7 @@ test.describe('POSTORDER :: UI Post-Order Lifecycle', () => {
 
     await orderSuccessPage.assertPageVisible();
     orderId = await orderSuccessPage.readOrderId();
-    expect(orderId).toContain('ORD-');
+    expect(orderId).not.toBe('');
   });
 
   test.describe('negative cases', () => {

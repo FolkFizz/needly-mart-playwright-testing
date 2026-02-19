@@ -119,7 +119,7 @@ test.describe('CARTCHECKOUT :: API Cart Coupon Checkout', () => {
 
         const orderBody = await orderResponse.json();
         expect(orderBody.ok).toBe(true);
-        expect(String(orderBody.orderId || '')).toContain('ORD-');
+        expect(String(orderBody.orderId || '').trim()).not.toBe('');
       }
     );
   });

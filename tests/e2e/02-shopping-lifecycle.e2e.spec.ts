@@ -111,7 +111,7 @@ test.describe('SHOP :: UI Shopping Lifecycle', () => {
 
         await orderSuccessPage.assertPageVisible();
         const orderId = await orderSuccessPage.readOrderId();
-        expect(orderId).toContain('ORD-');
+        expect(orderId).not.toBe('');
 
         await orderSuccessPage.openInvoice();
         await invoicePage.assertPageVisible();

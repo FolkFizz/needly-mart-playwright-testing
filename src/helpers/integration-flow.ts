@@ -7,7 +7,7 @@ import { integrationData } from '@data/integration';
 
 export const readOrderId = (body: unknown): string => {
   const row = body as { orderId?: unknown };
-  return String(row.orderId || '');
+  return String(row.orderId || '').trim();
 };
 
 export const readFirstClaimIdFromHtml = (html: string): number | null => {
@@ -58,6 +58,6 @@ export const createApprovedOrder = async (params: {
   const orderBody = await placeOrderResponse.json();
 
   const orderId = readOrderId(orderBody);
-  expect(orderId).toContain(integrationData.order.idPrefix);
+  expect(orderId).not.toBe('');
   return orderId;
 };

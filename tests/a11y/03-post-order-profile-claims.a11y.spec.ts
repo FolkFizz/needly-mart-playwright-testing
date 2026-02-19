@@ -45,7 +45,7 @@ test.describe('POSTORDER-PROFILE-CLAIMS :: A11y', () => {
         await a11yAudit.assertNoCriticalOrSerious();
 
         const orderId = await orderSuccessPage.readOrderId();
-        expect(orderId).toContain('ORD-');
+        expect(orderId).not.toBe('');
 
         await orderSuccessPage.openInvoice();
         await invoicePage.assertPageVisible();

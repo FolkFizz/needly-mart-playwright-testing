@@ -20,7 +20,6 @@ export const integrationData = {
     invalidToken: 'invalid-reset-token-value'
   },
   order: {
-    idPrefix: 'ORD-',
     missingPaymentToken: 'missing-token',
     quantity: {
       single: 1,

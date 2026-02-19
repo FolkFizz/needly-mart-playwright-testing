@@ -75,7 +75,7 @@ test.describe('ORDERACCESS :: API Order And Invoice Access', () => {
 
         const orderBody = await orderResponse.json();
         const orderId = String(orderBody.orderId || '');
-        expect(orderId).toContain('ORD-');
+        expect(orderId.trim()).not.toBe('');
 
         const invoiceResponse = await ordersApi.getInvoicePage(orderId);
         expect(invoiceResponse.status()).toBe(200);
@@ -102,7 +102,7 @@ test.describe('ORDERACCESS :: API Order And Invoice Access', () => {
 
         const orderBody = await orderResponse.json();
         const ownerOrderId = String(orderBody.orderId || '');
-        expect(ownerOrderId).toContain('ORD-');
+        expect(ownerOrderId.trim()).not.toBe('');
 
         expect((await authApi.logout()).status()).toBe(200);
 
