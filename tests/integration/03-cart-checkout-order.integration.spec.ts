@@ -72,11 +72,11 @@ test.describe('ORDERFLOW :: Integration Cart Coupon Checkout Order', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'ORDERFLOW-P01: full cart coupon checkout order flow succeeds and clears cart @integration @regression @destructive',
+      'ORDERFLOW-D01: full cart coupon checkout order flow succeeds and clears cart @integration @regression @destructive @serial',
       async ({ cartApi, ordersApi, productsApi }) => {
         const productId = await pickInStockProductId(productsApi);
         expect((await cartApi.add(productId, integrationData.order.quantity.bulk)).status()).toBe(
@@ -109,3 +109,5 @@ test.describe('ORDERFLOW :: Integration Cart Coupon Checkout Order', () => {
     );
   });
 });
+
+

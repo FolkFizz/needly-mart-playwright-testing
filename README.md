@@ -1,4 +1,4 @@
-# Needly Mart — Playwright Test Automation
+# Needly Mart - Playwright Test Automation
 
 > End-to-end QA automation framework for Needly Mart built with **Playwright + TypeScript**, covering E2E, API, Integration, Security, and Accessibility testing.
 
@@ -47,24 +47,24 @@
 
 ```
 src/
-├── api/clients/      # API client wrappers
-├── config/           # Env, routes, and runtime configuration
-├── data/             # Centralized test constants and data
-├── fixtures/         # Custom test.extend() fixtures
-├── helpers/          # Shared utility and flow helpers
-├── pages/            # Page Object Model (POM) classes
-└── selectors/        # Centralized selector registry
+|-- api/clients/      # API client wrappers
+|-- config/           # Env, routes, and runtime configuration
+|-- data/             # Centralized test constants and data
+|-- fixtures/         # Custom test.extend() fixtures
+|-- helpers/          # Shared utility and flow helpers
+|-- pages/            # Page Object Model (POM) classes
+`-- selectors/        # Centralized selector registry
 
 tests/
-├── a11y/
-├── api/
-├── e2e/
-├── integration/
-└── security/
+|-- a11y/
+|-- api/
+|-- e2e/
+|-- integration/
+`-- security/
 ```
 
 **Design principles:**
-- All UI selectors are defined in `src/selectors` and consumed via POM/helpers — never hardcoded in specs.
+- All UI selectors are defined in `src/selectors` and consumed via POM/helpers - never hardcoded in specs.
 - Test constants and shared flows are centralized in `src/data` and `src/helpers`.
 - Every spec file follows a `positive / negative / edge` case structure.
 
@@ -75,13 +75,14 @@ tests/
 **Title format:**
 
 ```
-<DOMAIN>-<P|N|E><NN>: <behavior> @tag1 @tag2 @tag3
+<DOMAIN>-<P|N|E|D><NN>: <behavior> @tag1 @tag2 @tag3
 ```
 
 **Example:**
 
 ```
 AUTH-P01: login with valid credentials succeeds @smoke @e2e @safe
+AUTH-D01: destructive serial flow succeeds with controlled state mutation @e2e @regression @destructive @serial
 ```
 
 **Available tags:**
@@ -91,11 +92,13 @@ AUTH-P01: login with valid credentials succeeds @smoke @e2e @safe
 | Type | `@e2e` `@api` `@integration` `@security` `@a11y` |
 | Suite | `@smoke` `@regression` |
 | Risk | `@safe` `@destructive` |
+| Execution | `@serial` |
 | Platform | `@mobile` |
 
 **Execution policy:**
 - `@safe` tests should stay independent and parallel-friendly.
-- `@destructive` tests must be grouped under `stateful/destructive cases (serial)` with `test.describe.configure({ mode: 'serial' })`.
+- `@destructive` tests must use `Dxx` case ids and include `@serial`.
+- `@destructive` tests must be grouped under `destructive cases (serial)` with `test.describe.configure({ mode: 'serial' })`.
 
 ---
 
@@ -238,7 +241,7 @@ Used to control inventory state during test runs.
 
 > **Note:** For production calls, you can restrict access further by setting `STOCK_RESET_IP_ALLOWLIST`.
 
-**Example — production reset:**
+**Example - production reset:**
 
 ```bash
 curl -X POST "$PROD_URL/api/test/reset-stock" \

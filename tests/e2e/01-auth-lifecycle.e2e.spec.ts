@@ -48,11 +48,11 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'AUTH-P01: user can register a new account then login and logout successfully @smoke @e2e @regression @destructive',
+      'AUTH-D01: user can register a new account then login and logout successfully @smoke @e2e @regression @destructive @serial',
       async ({ authPage }) => {
         const account = buildUniqueAccount('ui_auth_lifecycle');
 
@@ -69,7 +69,7 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
     );
 
     test(
-      'AUTH-P02: forgot-password and reset-password flow works end-to-end @e2e @regression @destructive',
+      'AUTH-D02: forgot-password and reset-password flow works end-to-end @e2e @regression @destructive @serial',
       async ({ authPage, demoInboxApi }) => {
         const firstRequestedAtMs = Date.now();
         await authPage.gotoForgotPassword();
@@ -118,3 +118,6 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
     );
   });
 });
+
+
+

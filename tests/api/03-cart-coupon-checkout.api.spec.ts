@@ -95,11 +95,11 @@ test.describe('CARTCHECKOUT :: API Cart Coupon Checkout', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'CARTCHECKOUT-P02: authorized payment token allows successful mock order placement @api @regression @destructive',
+      'CARTCHECKOUT-D01: authorized payment token allows successful mock order placement @api @regression @destructive @serial',
       async ({ cartApi, ordersApi }) => {
         expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
 
@@ -124,3 +124,5 @@ test.describe('CARTCHECKOUT :: API Cart Coupon Checkout', () => {
     );
   });
 });
+
+

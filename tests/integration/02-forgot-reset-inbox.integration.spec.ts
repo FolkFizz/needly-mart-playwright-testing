@@ -27,11 +27,11 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'RESETINBOX-P01: forgot-password creates reset token in demo inbox and allows password reset end-to-end @integration @regression @destructive',
+      'RESETINBOX-D01: forgot-password creates reset token in demo inbox and allows password reset end-to-end @integration @regression @destructive @serial',
       async ({ authApi, demoInboxApi }) => {
         const resetRequestedAtMs = Date.now();
         expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(integrationData.status.ok);
@@ -70,7 +70,7 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
     );
 
     test(
-      'RESETINBOX-E01: reset token is single-use and cannot be reused after successful reset @integration @regression @destructive',
+      'RESETINBOX-D02: reset token is single-use and cannot be reused after successful reset @integration @regression @destructive @serial',
       async ({ authApi, demoInboxApi }) => {
         const resetRequestedAtMs = Date.now();
         expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(integrationData.status.ok);
@@ -108,3 +108,5 @@ test.describe('RESETINBOX :: Integration Forgot Reset Demo Inbox', () => {
     );
   });
 });
+
+

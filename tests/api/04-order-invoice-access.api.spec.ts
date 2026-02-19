@@ -55,11 +55,11 @@ test.describe('ORDERACCESS :: API Order And Invoice Access', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'ORDERACCESS-P01: owner can access invoice page of newly created order @api @regression @destructive',
+      'ORDERACCESS-D01: owner can access invoice page of newly created order @api @regression @destructive @serial',
       async ({ cartApi, ordersApi }) => {
         expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
 
@@ -86,7 +86,7 @@ test.describe('ORDERACCESS :: API Order And Invoice Access', () => {
     );
 
     test(
-      'ORDERACCESS-N02: different authenticated user cannot access another users invoice @api @regression @destructive',
+      'ORDERACCESS-D02: different authenticated user cannot access another users invoice @api @regression @destructive @serial',
       async ({ authApi, cartApi, ordersApi }) => {
         expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
 
@@ -119,3 +119,5 @@ test.describe('ORDERACCESS :: API Order And Invoice Access', () => {
     );
   });
 });
+
+

@@ -32,11 +32,11 @@ test.describe('CLAIMS :: UI Claims Lifecycle', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'CLAIMS-P01: user can submit a new claim with image evidence from profile claims tab @e2e @regression @destructive',
+      'CLAIMS-D01: user can submit a new claim with image evidence from profile claims tab @e2e @regression @destructive @serial',
       async ({ profilePage, claimPage }) => {
         await profilePage.gotoProfile('claims');
         await profilePage.openFileNewClaim();
@@ -54,7 +54,7 @@ test.describe('CLAIMS :: UI Claims Lifecycle', () => {
     );
 
     test(
-      'CLAIMS-E01: claim can be moved to trash and restored without data loss @e2e @regression @destructive',
+      'CLAIMS-D02: claim can be moved to trash and restored without data loss @e2e @regression @destructive @serial',
       async ({ claimPage, profilePage }) => {
         await claimPage.gotoClaim();
         await claimPage.submitClaim(buildInvoiceId(), 'Edge claim for trash and restore lifecycle check.');
@@ -74,3 +74,5 @@ test.describe('CLAIMS :: UI Claims Lifecycle', () => {
     );
   });
 });
+
+

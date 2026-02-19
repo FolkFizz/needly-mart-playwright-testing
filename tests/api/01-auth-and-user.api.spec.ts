@@ -74,11 +74,11 @@ test.describe('AUTHUSER :: API Auth And User', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'AUTHUSER-P02: register can be followed by logout and login with new account @api @regression @destructive',
+      'AUTHUSER-D01: register can be followed by logout and login with new account @api @regression @destructive @serial',
       async ({ authApi }) => {
         const account = buildUniqueAccount('api_authuser');
 
@@ -97,3 +97,5 @@ test.describe('AUTHUSER :: API Auth And User', () => {
     );
   });
 });
+
+

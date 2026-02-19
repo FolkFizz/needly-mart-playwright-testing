@@ -50,11 +50,11 @@ test.describe('POSTPROFILECLAIMS :: Integration Post-Order Profile Claims', () =
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'POSTPROFILECLAIMS-P01: newly created order appears in profile order history and invoice page @integration @regression @destructive',
+      'POSTPROFILECLAIMS-D01: newly created order appears in profile order history and invoice page @integration @regression @destructive @serial',
       async ({ cartApi, ordersApi, productsApi, request }) => {
         const productId = await pickInStockProductId(productsApi);
         const orderId = await createApprovedOrder({ cartApi, ordersApi, productId });
@@ -78,7 +78,7 @@ test.describe('POSTPROFILECLAIMS :: Integration Post-Order Profile Claims', () =
     );
 
     test(
-      'POSTPROFILECLAIMS-E01: claim with image evidence can be trashed restored and served as binary evidence @integration @regression @destructive',
+      'POSTPROFILECLAIMS-D02: claim with image evidence can be trashed restored and served as binary evidence @integration @regression @destructive @serial',
       async ({ request }) => {
         const createClaimResponse = await request.post(ROUTE.claim, {
           multipart: {
@@ -137,3 +137,5 @@ test.describe('POSTPROFILECLAIMS :: Integration Post-Order Profile Claims', () =
     );
   });
 });
+
+

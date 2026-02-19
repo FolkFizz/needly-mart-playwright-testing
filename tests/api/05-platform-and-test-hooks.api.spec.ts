@@ -72,11 +72,11 @@ test.describe('PLATFORMHOOKS :: API Platform And Test Hooks', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'PLATFORMHOOKS-E01: reset endpoint with configured key returns explicit success or production-blocked response @api @regression @destructive',
+      'PLATFORMHOOKS-D01: reset endpoint with configured key returns explicit success or production-blocked response @api @regression @destructive @serial',
       async ({ testHooksApi }) => {
         test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
 
@@ -89,3 +89,5 @@ test.describe('PLATFORMHOOKS :: API Platform And Test Hooks', () => {
     );
   });
 });
+
+

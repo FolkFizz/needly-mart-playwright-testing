@@ -70,11 +70,11 @@ test.describe('TESTHOOKSOPS :: Security Test Hooks And Operational Surfaces', ()
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'OPERSEC-E01: demo inbox allows public trash mutation without login @security @regression @destructive',
+      'OPERSEC-D01: demo inbox allows public trash mutation without login @security @regression @destructive @serial',
       async ({ authApi, demoInboxApi }) => {
         expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(securityData.status.ok);
 
@@ -91,3 +91,5 @@ test.describe('TESTHOOKSOPS :: Security Test Hooks And Operational Surfaces', ()
     );
   });
 });
+
+

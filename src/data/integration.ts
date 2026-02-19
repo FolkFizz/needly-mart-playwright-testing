@@ -41,7 +41,8 @@ export const integrationData = {
   testHooks: {
     invalidProductId: 999_999,
     defaultStock: 50,
-    invalidStock: -1
+    invalidStock: -1,
+    updatedStock: 7
   },
   selectors: {
     loginPage: 'data-testid="login-page"'

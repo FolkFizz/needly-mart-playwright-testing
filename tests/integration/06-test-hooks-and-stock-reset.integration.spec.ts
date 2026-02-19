@@ -64,11 +64,11 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'TESTHOOKS-P01: reset and seed endpoints with configured key return explicit success or production-blocked response @integration @regression @destructive',
+      'TESTHOOKS-D01: reset and seed endpoints with configured key return explicit success or production-blocked response @integration @regression @destructive @serial',
       async ({ testHooksApi }) => {
         test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
 
@@ -79,5 +79,75 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
         expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(seedResponse.status());
       }
     );
+
+    test(
+      'TESTHOOKS-D02: set-stock with configured stock-reset key updates product state or returns production-blocked response @integration @regression @destructive @serial',
+      async ({ testHooksApi, productsApi }) => {
+        test.skip(
+          !runtime.testHooks.stockResetApiKey,
+          'STOCK_RESET_API_KEY is not configured for this environment'
+        );
+
+        const targetStock = integrationData.testHooks.updatedStock;
+        const response = await testHooksApi.setStock(
+          products.apple.id,
+          targetStock,
+          runtime.testHooks.stockResetApiKey
+        );
+        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(response.status());
+
+        const body = await response.json().catch(() => ({}));
+        if (response.status() === integrationData.status.ok) {
+          expect(body.ok).toBe(true);
+          expect(Number(body.productId)).toBe(products.apple.id);
+          expect(Number(body.stock)).toBe(targetStock);
+
+          const productResponse = await productsApi.getById(products.apple.id);
+          expect(productResponse.status()).toBe(integrationData.status.ok);
+
+          const productBody = await productResponse.json().catch(() => ({}));
+          expect(productBody.ok).toBe(true);
+          expect(Number(productBody.product?.stock)).toBe(targetStock);
+          return;
+        }
+
+        expect(String(body.message || '')).not.toBe('');
+      }
+    );
+
+    test(
+      'TESTHOOKS-D03: reset-stock with configured stock-reset key restores default stock or returns production-blocked response @integration @regression @destructive @serial',
+      async ({ testHooksApi, productsApi }) => {
+        test.skip(
+          !runtime.testHooks.stockResetApiKey,
+          'STOCK_RESET_API_KEY is not configured for this environment'
+        );
+
+        const response = await testHooksApi.resetStock(
+          integrationData.testHooks.defaultStock,
+          runtime.testHooks.stockResetApiKey
+        );
+        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(response.status());
+
+        const body = await response.json().catch(() => ({}));
+        if (response.status() === integrationData.status.ok) {
+          expect(body.ok).toBe(true);
+          expect(Number(body.stock)).toBe(integrationData.testHooks.defaultStock);
+          expect(Number(body.updatedProducts || 0)).toBeGreaterThan(0);
+
+          const productResponse = await productsApi.getById(products.apple.id);
+          expect(productResponse.status()).toBe(integrationData.status.ok);
+
+          const productBody = await productResponse.json().catch(() => ({}));
+          expect(productBody.ok).toBe(true);
+          expect(Number(productBody.product?.stock)).toBe(integrationData.testHooks.defaultStock);
+          return;
+        }
+
+        expect(String(body.message || '')).not.toBe('');
+      }
+    );
   });
 });
+
+

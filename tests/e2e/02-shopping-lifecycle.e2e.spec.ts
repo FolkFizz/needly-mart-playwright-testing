@@ -81,11 +81,11 @@ test.describe('SHOP :: UI Shopping Lifecycle', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'SHOP-P02: user can checkout with coupon and receive order confirmation email @smoke @e2e @regression @destructive',
+      'SHOP-D01: user can checkout with coupon and receive order confirmation email @smoke @e2e @regression @destructive @serial',
       async ({
         productPage,
         cartPage,
@@ -127,3 +127,5 @@ test.describe('SHOP :: UI Shopping Lifecycle', () => {
     );
   });
 });
+
+

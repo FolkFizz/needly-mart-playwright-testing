@@ -31,11 +31,11 @@ test.describe('PROFILE :: UI Profile Lifecycle', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'PROFILE-P01: user can update profile and navigate all profile tabs @e2e @regression @destructive',
+      'PROFILE-D01: user can update profile and navigate all profile tabs @e2e @regression @destructive @serial',
       async ({ profilePage }) => {
         await profilePage.updateProfile(
           runtime.user.email,
@@ -51,7 +51,7 @@ test.describe('PROFILE :: UI Profile Lifecycle', () => {
     );
 
     test(
-      'PROFILE-E01: profile email is normalized to lowercase and trimmed after save @e2e @regression @destructive',
+      'PROFILE-D02: profile email is normalized to lowercase and trimmed after save @e2e @regression @destructive @serial',
       async ({ profilePage }) => {
         await profilePage.updateProfile(
           `  ${runtime.user.email.toUpperCase()}  `,
@@ -64,3 +64,5 @@ test.describe('PROFILE :: UI Profile Lifecycle', () => {
     );
   });
 });
+
+

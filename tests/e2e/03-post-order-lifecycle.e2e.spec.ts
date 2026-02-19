@@ -40,11 +40,11 @@ test.describe('POSTORDER :: UI Post-Order Lifecycle', () => {
     );
   });
 
-  test.describe('stateful/destructive cases (serial)', () => {
+  test.describe('destructive cases (serial)', () => {
     test.describe.configure({ mode: 'serial' });
 
     test(
-      'POSTORDER-P01: user can open invoice from order history after purchase @e2e @regression @destructive',
+      'POSTORDER-D01: user can open invoice from order history after purchase @e2e @regression @destructive @serial',
       async ({ profilePage, invoicePage }) => {
         await profilePage.gotoProfile('orders');
         await profilePage.assertOrderCardVisible(orderId);
@@ -56,7 +56,7 @@ test.describe('POSTORDER :: UI Post-Order Lifecycle', () => {
     );
 
     test(
-      'POSTORDER-E01: order can be moved to trash and restored back to inbox @e2e @regression @destructive',
+      'POSTORDER-D02: order can be moved to trash and restored back to inbox @e2e @regression @destructive @serial',
       async ({ profilePage }) => {
         await profilePage.gotoProfile('orders');
         await profilePage.assertOrderCardVisible(orderId);
@@ -72,3 +72,5 @@ test.describe('POSTORDER :: UI Post-Order Lifecycle', () => {
     );
   });
 });
+
+
