@@ -35,11 +35,19 @@ test.describe('AUTH-GUARD :: A11y', () => {
     test(
       'AUTHA11Y-E01: reset-password page rendered from a valid token remains accessible @a11y @regression @safe',
       async ({ authPage, demoInboxApi, a11yAudit }) => {
+        const requestedAtMs = Date.now();
         await authPage.gotoForgotPassword();
         await authPage.submitForgotPassword(runtime.user.email);
         await authPage.assertForgotPasswordSuccessVisible();
 
-        const token = await demoInboxApi.readLatestResetToken();
+        const token = await demoInboxApi.readLatestResetToken({
+          requestedAtMs,
+          recipient: {
+            username: runtime.user.username,
+            password: runtime.user.password,
+            email: runtime.user.email
+          }
+        });
         await authPage.gotoResetPassword(token);
         await a11yAudit.assertNoCriticalOrSerious();
       }

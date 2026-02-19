@@ -17,11 +17,19 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
     test(
       'AUTH-N02: reset-password rejects mismatched confirmation password @e2e @regression @safe',
       async ({ authPage, demoInboxApi }) => {
+        const requestedAtMs = Date.now();
         await authPage.gotoForgotPassword();
         await authPage.submitForgotPassword(runtime.user.email);
         await authPage.assertForgotPasswordSuccessVisible();
 
-        const resetToken = await demoInboxApi.readLatestResetToken();
+        const resetToken = await demoInboxApi.readLatestResetToken({
+          requestedAtMs,
+          recipient: {
+            username: runtime.user.username,
+            password: runtime.user.password,
+            email: runtime.user.email
+          }
+        });
         await authPage.gotoResetPassword(resetToken);
         await authPage.submitResetPassword(runtime.user.newPassword, `${runtime.user.newPassword}_mismatch`);
         await authPage.assertResetPasswordErrorContains('Passwords do not match');
@@ -63,11 +71,19 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
     test(
       'AUTH-P02: forgot-password and reset-password flow works end-to-end @e2e @regression @destructive',
       async ({ authPage, demoInboxApi }) => {
+        const firstRequestedAtMs = Date.now();
         await authPage.gotoForgotPassword();
         await authPage.submitForgotPassword(runtime.user.email);
         await authPage.assertForgotPasswordSuccessVisible();
 
-        const resetToken = await demoInboxApi.readLatestResetToken();
+        const resetToken = await demoInboxApi.readLatestResetToken({
+          requestedAtMs: firstRequestedAtMs,
+          recipient: {
+            username: runtime.user.username,
+            password: runtime.user.password,
+            email: runtime.user.email
+          }
+        });
         expect(resetToken).not.toBe('');
 
         await authPage.gotoResetPassword(resetToken);
@@ -77,11 +93,19 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
         await authPage.login(runtime.user.username, runtime.user.newPassword);
         await authPage.assertLoggedInUiVisible();
 
+        const restoreRequestedAtMs = Date.now();
         await authPage.gotoForgotPassword();
         await authPage.submitForgotPassword(runtime.user.email);
         await authPage.assertForgotPasswordSuccessVisible();
 
-        const restoreToken = await demoInboxApi.readLatestResetToken();
+        const restoreToken = await demoInboxApi.readLatestResetToken({
+          requestedAtMs: restoreRequestedAtMs,
+          recipient: {
+            username: runtime.user.username,
+            password: runtime.user.newPassword,
+            email: runtime.user.email
+          }
+        });
         expect(restoreToken).not.toBe('');
 
         await authPage.gotoResetPassword(restoreToken);
