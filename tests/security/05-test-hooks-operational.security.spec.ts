@@ -1,6 +1,5 @@
 import { accounts } from '@data/accounts';
 import { securityData } from '@data/security';
-import { ROUTE } from '@config/routes';
 import { runtime } from '@config/env';
 import { extractFirstEmailId } from '@helpers/demo-inbox';
 import { test, expect } from '@fixtures/test.base';
@@ -46,11 +45,8 @@ test.describe('TESTHOOKSOPS :: Security Test Hooks And Operational Surfaces', ()
 
     test(
       'OPERSEC-N02: stock reset endpoint is blocked without required header @security @regression @safe',
-      async ({ request }) => {
-        const response = await request.post(ROUTE.testResetStock, {
-          data: { stock: securityData.testHooks.resetStockDefault },
-          headers: { Accept: securityData.headers.accept.json }
-        });
+      async ({ testHooksApi }) => {
+        const response = await testHooksApi.resetStock(securityData.testHooks.resetStockDefault);
         expect(response.status()).toBe(securityData.status.forbidden);
 
         const body = await response.json().catch(() => ({}));
