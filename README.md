@@ -125,6 +125,7 @@ Edit `.env` with your environment values before running tests.
 |---|---|
 | `TEST_API_KEY` | API key for test-hook endpoints (non-production) |
 | `STOCK_RESET_API_KEY` | API key for production stock reset calls |
+| `EXECUTION_PROFILE` | Run mode: `all` (default), `smoke`, `safe`, or `stateful` |
 | Timeout / headless flags | See `.env.example` for full list |
 
 ---
@@ -135,6 +136,15 @@ Edit `.env` with your environment values before running tests.
 
 ```bash
 npm test
+```
+
+**Run by execution profile (recommended):**
+
+```bash
+npm run test:profile:all
+npm run test:profile:smoke
+npm run test:profile:safe
+npm run test:profile:stateful
 ```
 
 **Run by suite:**

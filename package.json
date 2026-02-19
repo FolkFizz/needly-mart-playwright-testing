@@ -5,6 +5,10 @@
   "description": "Minimal, scalable QA automation framework for Needly Mart using Playwright + TypeScript.",
   "scripts": {
     "test": "playwright test",
+    "test:profile:all": "cross-env EXECUTION_PROFILE=all playwright test",
+    "test:profile:smoke": "cross-env EXECUTION_PROFILE=smoke playwright test",
+    "test:profile:safe": "cross-env EXECUTION_PROFILE=safe playwright test",
+    "test:profile:stateful": "cross-env EXECUTION_PROFILE=stateful playwright test",
     "test:smoke": "cross-env TAGS=@smoke playwright test",
     "test:e2e": "cross-env TAGS=@e2e playwright test",
     "test:api": "cross-env TAGS=@api playwright test",
