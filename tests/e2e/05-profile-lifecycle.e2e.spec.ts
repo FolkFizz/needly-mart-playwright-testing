@@ -1,5 +1,6 @@
 import { runtime } from '@config/env';
 import { test, expect } from '@fixtures/test.base';
+import { buildUniqueAccount } from '@helpers/factories';
 
 test.describe('PROFILE :: UI Profile Lifecycle', () => {
   test.beforeEach(async ({ authPage, profilePage }) => {
@@ -12,8 +13,19 @@ test.describe('PROFILE :: UI Profile Lifecycle', () => {
   test.describe('negative cases', () => {
     test(
       'PROFILE-N01: updating profile with duplicate email is rejected @e2e @regression @safe',
-      async ({ profilePage }) => {
-        await profilePage.updateProfile('qauser@needlymart.com', 'Duplicate Email Validation', '0811111111');
+      async ({ profilePage, authApi }) => {
+        const duplicateAccount = buildUniqueAccount('ui_profile_duplicate');
+        expect(
+          (
+            await authApi.register(
+              duplicateAccount.username,
+              duplicateAccount.email,
+              duplicateAccount.password
+            )
+          ).status()
+        ).toBe(201);
+
+        await profilePage.updateProfile(duplicateAccount.email, 'Duplicate Email Validation', '0811111111');
         await profilePage.assertErrorContains('Email is already in use');
       }
     );

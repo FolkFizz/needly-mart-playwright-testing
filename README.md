@@ -118,15 +118,18 @@ Edit `.env` with your environment values before running tests.
 | Variable | Description |
 |---|---|
 | `PROD_URL` | Target environment base URL |
-| `TEST_USER_USERNAME` | Test account username |
-| `TEST_USER_PASSWORD` | Test account password |
-| `TEST_USER_EMAIL` | Test account email |
+| `TEST_USER_USERNAME` | Base username template for test identity |
+| `TEST_USER_PASSWORD` | Base password for worker test identities |
+| `TEST_USER_EMAIL` | Base email template for test identity |
 | `TEST_USER_NEW_PASSWORD` | Password used in change-password flows |
 
 **Optional:**
 
 | Variable | Description |
 |---|---|
+| `TEST_IDENTITY_MODE` | `worker` (default) appends unique worker suffix, `static` uses exact base user values |
+| `TEST_RUN_ID` | Optional run token added into worker identity suffix for strict run-level isolation |
+| `TEST_AUTO_PROVISION_USER` | Auto-create/validate worker-scoped user before tests (`true` by default) |
 | `TEST_API_KEY` | API key for test-hook endpoints (non-production) |
 | `STOCK_RESET_API_KEY` | API key for production stock reset calls |
 | `EXECUTION_PROFILE` | Run mode: `all` (default), `smoke`, `safe`, or `stateful` |
