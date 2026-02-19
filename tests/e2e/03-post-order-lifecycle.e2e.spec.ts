@@ -30,7 +30,19 @@ test.describe('POSTORDER :: UI Post-Order Lifecycle', () => {
     expect(orderId).toContain('ORD-');
   });
 
-  test.describe('positive cases', () => {
+  test.describe('negative cases', () => {
+    test(
+      'POSTORDER-N01: tampered invoice id shows not-found page @e2e @regression @safe',
+      async ({ page, productPage }) => {
+        await page.goto(ROUTE.invoice(`${orderId}-tampered`));
+        await productPage.assertNotFoundMessageContains('Invoice not found');
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
     test(
       'POSTORDER-P01: user can open invoice from order history after purchase @e2e @regression @destructive',
       async ({ profilePage, invoicePage }) => {
@@ -42,19 +54,7 @@ test.describe('POSTORDER :: UI Post-Order Lifecycle', () => {
         await invoicePage.assertOrderIdContains(orderId);
       }
     );
-  });
 
-  test.describe('negative cases', () => {
-    test(
-      'POSTORDER-N01: tampered invoice id shows not-found page @e2e @regression @safe',
-      async ({ page, productPage }) => {
-        await page.goto(ROUTE.invoice(`${orderId}-tampered`));
-        await productPage.assertNotFoundMessageContains('Invoice not found');
-      }
-    );
-  });
-
-  test.describe('edge cases', () => {
     test(
       'POSTORDER-E01: order can be moved to trash and restored back to inbox @e2e @regression @destructive',
       async ({ profilePage }) => {

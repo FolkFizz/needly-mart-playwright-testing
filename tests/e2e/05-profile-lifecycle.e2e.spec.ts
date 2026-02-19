@@ -9,7 +9,19 @@ test.describe('PROFILE :: UI Profile Lifecycle', () => {
     await profilePage.gotoProfile('info');
   });
 
-  test.describe('positive cases', () => {
+  test.describe('negative cases', () => {
+    test(
+      'PROFILE-N01: updating profile with duplicate email is rejected @e2e @regression @safe',
+      async ({ profilePage }) => {
+        await profilePage.updateProfile('qauser@needlymart.com', 'Duplicate Email Validation', '0811111111');
+        await profilePage.assertErrorContains('Email is already in use');
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
     test(
       'PROFILE-P01: user can update profile and navigate all profile tabs @e2e @regression @destructive',
       async ({ profilePage }) => {
@@ -25,23 +37,15 @@ test.describe('PROFILE :: UI Profile Lifecycle', () => {
         await profilePage.openInfoTab();
       }
     );
-  });
 
-  test.describe('negative cases', () => {
-    test(
-      'PROFILE-N01: updating profile with duplicate email is rejected @e2e @regression @safe',
-      async ({ profilePage }) => {
-        await profilePage.updateProfile('qauser@needlymart.com', 'Duplicate Email Validation', '0811111111');
-        await profilePage.assertErrorContains('Email is already in use');
-      }
-    );
-  });
-
-  test.describe('edge cases', () => {
     test(
       'PROFILE-E01: profile email is normalized to lowercase and trimmed after save @e2e @regression @destructive',
       async ({ profilePage }) => {
-        await profilePage.updateProfile(`  ${runtime.user.email.toUpperCase()}  `, 'Normalize Email Edge Case', '0822222222');
+        await profilePage.updateProfile(
+          `  ${runtime.user.email.toUpperCase()}  `,
+          'Normalize Email Edge Case',
+          '0822222222'
+        );
         await profilePage.assertSuccessContains('Profile updated');
         expect(await profilePage.readEmailValue()).toBe(runtime.user.email.toLowerCase());
       }

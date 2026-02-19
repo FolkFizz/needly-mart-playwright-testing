@@ -9,26 +9,6 @@ test.describe('CLAIMS :: UI Claims Lifecycle', () => {
     await authPage.assertLoggedInUiVisible();
   });
 
-  test.describe('positive cases', () => {
-    test(
-      'CLAIMS-P01: user can submit a new claim with image evidence from profile claims tab @e2e @regression @destructive',
-      async ({ profilePage, claimPage }) => {
-        await profilePage.gotoProfile('claims');
-        await profilePage.openFileNewClaim();
-
-        await claimPage.fillInvoiceId(buildInvoiceId());
-        await claimPage.fillDescription('Image evidence claim from e2e lifecycle flow.');
-        await claimPage.uploadImageEvidence();
-        await claimPage.submit();
-
-        await profilePage.openClaimsTab();
-        const claimId = await profilePage.readFirstClaimId();
-        expect(claimId).not.toBeNull();
-        await profilePage.assertClaimCardVisible(Number(claimId));
-      }
-    );
-  });
-
   test.describe('negative cases', () => {
     test(
       'CLAIMS-N01: non-image evidence upload is rejected by claim form validation @e2e @regression @safe',
@@ -52,7 +32,27 @@ test.describe('CLAIMS :: UI Claims Lifecycle', () => {
     );
   });
 
-  test.describe('edge cases', () => {
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'CLAIMS-P01: user can submit a new claim with image evidence from profile claims tab @e2e @regression @destructive',
+      async ({ profilePage, claimPage }) => {
+        await profilePage.gotoProfile('claims');
+        await profilePage.openFileNewClaim();
+
+        await claimPage.fillInvoiceId(buildInvoiceId());
+        await claimPage.fillDescription('Image evidence claim from e2e lifecycle flow.');
+        await claimPage.uploadImageEvidence();
+        await claimPage.submit();
+
+        await profilePage.openClaimsTab();
+        const claimId = await profilePage.readFirstClaimId();
+        expect(claimId).not.toBeNull();
+        await profilePage.assertClaimCardVisible(Number(claimId));
+      }
+    );
+
     test(
       'CLAIMS-E01: claim can be moved to trash and restored without data loss @e2e @regression @destructive',
       async ({ claimPage, profilePage }) => {

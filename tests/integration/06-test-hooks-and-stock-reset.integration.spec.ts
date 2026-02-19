@@ -5,21 +5,6 @@ import { products } from '@data/products';
 import { test, expect } from '@fixtures/test.base';
 
 test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
-  test.describe('positive cases', () => {
-    test(
-      'TESTHOOKS-P01: reset and seed endpoints with configured key return explicit success or production-blocked response @integration @regression @destructive',
-      async ({ testHooksApi }) => {
-        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
-
-        const resetResponse = await testHooksApi.reset(runtime.testHooks.apiKey);
-        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(resetResponse.status());
-
-        const seedResponse = await testHooksApi.seed(runtime.testHooks.apiKey);
-        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(seedResponse.status());
-      }
-    );
-  });
-
   test.describe('negative cases', () => {
     test(
       'TESTHOOKS-N01: reset endpoint is forbidden without api key @integration @regression @safe',
@@ -73,6 +58,23 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
         });
 
         expect([integrationData.status.badRequest, integrationData.status.forbidden]).toContain(response.status());
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'TESTHOOKS-P01: reset and seed endpoints with configured key return explicit success or production-blocked response @integration @regression @destructive',
+      async ({ testHooksApi }) => {
+        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
+
+        const resetResponse = await testHooksApi.reset(runtime.testHooks.apiKey);
+        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(resetResponse.status());
+
+        const seedResponse = await testHooksApi.seed(runtime.testHooks.apiKey);
+        expect([integrationData.status.ok, integrationData.status.forbidden]).toContain(seedResponse.status());
       }
     );
   });

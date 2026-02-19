@@ -61,6 +61,23 @@ test.describe('TESTHOOKSOPS :: Security Test Hooks And Operational Surfaces', ()
 
   test.describe('edge cases', () => {
     test(
+      'OPERSEC-E02: reset endpoint with configured key returns explicit and controlled result @security @regression @safe',
+      async ({ testHooksApi }) => {
+        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured in this environment');
+
+        const response = await testHooksApi.reset(runtime.testHooks.apiKey);
+        expect([securityData.status.ok, securityData.status.forbidden]).toContain(response.status());
+
+        const body = await response.json().catch(() => ({}));
+        expect(String(body.message || body.ok || '')).not.toBe('');
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
       'OPERSEC-E01: demo inbox allows public trash mutation without login @security @regression @destructive',
       async ({ authApi, demoInboxApi }) => {
         expect((await authApi.forgotPassword(accounts.primary.email)).status()).toBe(securityData.status.ok);
@@ -74,19 +91,6 @@ test.describe('TESTHOOKSOPS :: Security Test Hooks And Operational Surfaces', ()
 
         const trashResponse = await demoInboxApi.list(securityData.demoInbox.formBox.trash);
         expect(await trashResponse.text()).toContain(`inbox-email-item-${emailId}`);
-      }
-    );
-
-    test(
-      'OPERSEC-E02: reset endpoint with configured key returns explicit and controlled result @security @regression @safe',
-      async ({ testHooksApi }) => {
-        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured in this environment');
-
-        const response = await testHooksApi.reset(runtime.testHooks.apiKey);
-        expect([securityData.status.ok, securityData.status.forbidden]).toContain(response.status());
-
-        const body = await response.json().catch(() => ({}));
-        expect(String(body.message || body.ok || '')).not.toBe('');
       }
     );
   });

@@ -13,41 +13,6 @@ test.describe('ORDERFLOW :: Integration Cart Coupon Checkout Order', () => {
     expect((await cartApi.clear()).status()).toBe(integrationData.status.ok);
   });
 
-  test.describe('positive cases', () => {
-    test(
-      'ORDERFLOW-P01: full cart coupon checkout order flow succeeds and clears cart @integration @regression @destructive',
-      async ({ cartApi, ordersApi, productsApi }) => {
-        const productId = await pickInStockProductId(productsApi);
-        expect((await cartApi.add(productId, integrationData.order.quantity.bulk)).status()).toBe(
-          integrationData.status.ok
-        );
-        expect((await cartApi.applyCoupon(coupons.valid)).status()).toBe(integrationData.status.ok);
-
-        const authorizeResponse = await ordersApi.authorizeMockPayment(testCards.approved);
-        expect(authorizeResponse.status()).toBe(integrationData.status.ok);
-        const authorizeBody = await authorizeResponse.json();
-        const paymentToken = String(authorizeBody.token || '');
-        expect(paymentToken).not.toBe('');
-
-        const placeOrderResponse = await ordersApi.placeMockOrder({
-          paymentToken,
-          ...checkoutForm.valid
-        });
-        expect(placeOrderResponse.status()).toBe(integrationData.status.ok);
-
-        const orderBody = await placeOrderResponse.json();
-        expect(orderBody.ok).toBe(true);
-        expect(String(orderBody.orderId || '')).toContain(integrationData.order.idPrefix);
-
-        const cartAfterOrder = await cartApi.get();
-        expect(cartAfterOrder.status()).toBe(integrationData.status.ok);
-        const cartBody = await cartAfterOrder.json();
-        expect(Array.isArray(cartBody.cart)).toBe(true);
-        expect(cartBody.cart.length).toBe(0);
-      }
-    );
-  });
-
   test.describe('negative cases', () => {
     test(
       'ORDERFLOW-N01: order placement without authorized payment token is rejected @integration @regression @safe',
@@ -103,6 +68,43 @@ test.describe('ORDERFLOW :: Integration Cart Coupon Checkout Order', () => {
 
         const body = await addResponse.json();
         expect(body.ok).toBe(false);
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'ORDERFLOW-P01: full cart coupon checkout order flow succeeds and clears cart @integration @regression @destructive',
+      async ({ cartApi, ordersApi, productsApi }) => {
+        const productId = await pickInStockProductId(productsApi);
+        expect((await cartApi.add(productId, integrationData.order.quantity.bulk)).status()).toBe(
+          integrationData.status.ok
+        );
+        expect((await cartApi.applyCoupon(coupons.valid)).status()).toBe(integrationData.status.ok);
+
+        const authorizeResponse = await ordersApi.authorizeMockPayment(testCards.approved);
+        expect(authorizeResponse.status()).toBe(integrationData.status.ok);
+        const authorizeBody = await authorizeResponse.json();
+        const paymentToken = String(authorizeBody.token || '');
+        expect(paymentToken).not.toBe('');
+
+        const placeOrderResponse = await ordersApi.placeMockOrder({
+          paymentToken,
+          ...checkoutForm.valid
+        });
+        expect(placeOrderResponse.status()).toBe(integrationData.status.ok);
+
+        const orderBody = await placeOrderResponse.json();
+        expect(orderBody.ok).toBe(true);
+        expect(String(orderBody.orderId || '')).toContain(integrationData.order.idPrefix);
+
+        const cartAfterOrder = await cartApi.get();
+        expect(cartAfterOrder.status()).toBe(integrationData.status.ok);
+        const cartBody = await cartAfterOrder.json();
+        expect(Array.isArray(cartBody.cart)).toBe(true);
+        expect(cartBody.cart.length).toBe(0);
       }
     );
   });

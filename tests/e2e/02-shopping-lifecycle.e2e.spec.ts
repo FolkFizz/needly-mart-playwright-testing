@@ -30,47 +30,6 @@ test.describe('SHOP :: UI Shopping Lifecycle', () => {
       }
     );
 
-    test(
-      'SHOP-P02: user can checkout with coupon and receive order confirmation email @smoke @e2e @regression @destructive',
-      async ({
-        productPage,
-        cartPage,
-        checkoutPage,
-        orderSuccessPage,
-        invoicePage,
-        inboxPage
-      }) => {
-        await productPage.gotoProduct(products.apple.id);
-        await productPage.setQuantity(1);
-        await productPage.addToCart();
-
-        await cartPage.gotoCart();
-        await cartPage.assertItemRowVisible(products.apple.id);
-        await cartPage.applyCoupon(coupons.valid);
-        await cartPage.assertCouponApplied(coupons.valid);
-
-        await cartPage.openCheckout();
-        await checkoutPage.fillContact(checkoutForm.valid);
-        await checkoutPage.fillCard(testCards.approved);
-        await checkoutPage.assertPayButtonEnabled();
-        await checkoutPage.clickPayNowAndWaitForSuccess();
-
-        await orderSuccessPage.assertPageVisible();
-        const orderId = await orderSuccessPage.readOrderId();
-        expect(orderId).toContain('ORD-');
-
-        await orderSuccessPage.openInvoice();
-        await invoicePage.assertPageVisible();
-        await invoicePage.assertOrderIdContains(orderId);
-
-        await inboxPage.gotoInbox();
-        const emailId = await inboxPage.readFirstEmailId();
-        expect(emailId).not.toBeNull();
-        await inboxPage.openEmail(Number(emailId));
-        await inboxPage.assertDetailSubjectContains('[ORDER] Confirmation');
-        await inboxPage.assertDetailBodyContains(orderId);
-      }
-    );
   });
 
   test.describe('negative cases', () => {
@@ -118,6 +77,52 @@ test.describe('SHOP :: UI Shopping Lifecycle', () => {
         await productPage.setQuantity(overLimitQuantity);
         await productPage.addToCart();
         await cartPage.assertErrorContains('Stock limit reached');
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'SHOP-P02: user can checkout with coupon and receive order confirmation email @smoke @e2e @regression @destructive',
+      async ({
+        productPage,
+        cartPage,
+        checkoutPage,
+        orderSuccessPage,
+        invoicePage,
+        inboxPage
+      }) => {
+        await productPage.gotoProduct(products.apple.id);
+        await productPage.setQuantity(1);
+        await productPage.addToCart();
+
+        await cartPage.gotoCart();
+        await cartPage.assertItemRowVisible(products.apple.id);
+        await cartPage.applyCoupon(coupons.valid);
+        await cartPage.assertCouponApplied(coupons.valid);
+
+        await cartPage.openCheckout();
+        await checkoutPage.fillContact(checkoutForm.valid);
+        await checkoutPage.fillCard(testCards.approved);
+        await checkoutPage.assertPayButtonEnabled();
+        await checkoutPage.clickPayNowAndWaitForSuccess();
+
+        await orderSuccessPage.assertPageVisible();
+        const orderId = await orderSuccessPage.readOrderId();
+        expect(orderId).toContain('ORD-');
+
+        await orderSuccessPage.openInvoice();
+        await invoicePage.assertPageVisible();
+        await invoicePage.assertOrderIdContains(orderId);
+
+        await inboxPage.gotoInbox();
+        const emailId = await inboxPage.readFirstEmailId();
+        expect(emailId).not.toBeNull();
+        await inboxPage.openEmail(Number(emailId));
+        await inboxPage.assertDetailSubjectContains('[ORDER] Confirmation');
+        await inboxPage.assertDetailBodyContains(orderId);
       }
     );
   });

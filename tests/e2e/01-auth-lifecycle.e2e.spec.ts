@@ -4,7 +4,45 @@ import { test, expect } from '@fixtures/test.base';
 import { buildUniqueAccount } from '@helpers/factories';
 
 test.describe('AUTH :: UI Auth Lifecycle', () => {
-  test.describe('positive cases', () => {
+  test.describe('negative cases', () => {
+    test(
+      'AUTH-N01: login with invalid password shows authentication error @e2e @regression @safe',
+      async ({ authPage }) => {
+        await authPage.gotoLogin();
+        await authPage.login(accounts.invalid.username, accounts.invalid.password);
+        await authPage.assertLoginErrorContains('Invalid username or password');
+      }
+    );
+
+    test(
+      'AUTH-N02: reset-password rejects mismatched confirmation password @e2e @regression @safe',
+      async ({ authPage, demoInboxApi }) => {
+        await authPage.gotoForgotPassword();
+        await authPage.submitForgotPassword(runtime.user.email);
+        await authPage.assertForgotPasswordSuccessVisible();
+
+        const resetToken = await demoInboxApi.readLatestResetToken();
+        await authPage.gotoResetPassword(resetToken);
+        await authPage.submitResetPassword(runtime.user.newPassword, `${runtime.user.newPassword}_mismatch`);
+        await authPage.assertResetPasswordErrorContains('Passwords do not match');
+      }
+    );
+  });
+
+  test.describe('edge cases', () => {
+    test(
+      'AUTH-E01: login trims leading and trailing spaces in username input @e2e @regression @safe',
+      async ({ authPage }) => {
+        await authPage.gotoLogin();
+        await authPage.login(accounts.edge.usernameWithSpaces, runtime.user.password);
+        await authPage.assertLoggedInUiVisible();
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
     test(
       'AUTH-P01: user can register a new account then login and logout successfully @smoke @e2e @regression @destructive',
       async ({ authPage }) => {
@@ -51,42 +89,6 @@ test.describe('AUTH :: UI Auth Lifecycle', () => {
 
         await authPage.gotoLogin();
         await authPage.login(runtime.user.username, runtime.user.password);
-        await authPage.assertLoggedInUiVisible();
-      }
-    );
-  });
-
-  test.describe('negative cases', () => {
-    test(
-      'AUTH-N01: login with invalid password shows authentication error @e2e @regression @safe',
-      async ({ authPage }) => {
-        await authPage.gotoLogin();
-        await authPage.login(accounts.invalid.username, accounts.invalid.password);
-        await authPage.assertLoginErrorContains('Invalid username or password');
-      }
-    );
-
-    test(
-      'AUTH-N02: reset-password rejects mismatched confirmation password @e2e @regression @safe',
-      async ({ authPage, demoInboxApi }) => {
-        await authPage.gotoForgotPassword();
-        await authPage.submitForgotPassword(runtime.user.email);
-        await authPage.assertForgotPasswordSuccessVisible();
-
-        const resetToken = await demoInboxApi.readLatestResetToken();
-        await authPage.gotoResetPassword(resetToken);
-        await authPage.submitResetPassword(runtime.user.newPassword, `${runtime.user.newPassword}_mismatch`);
-        await authPage.assertResetPasswordErrorContains('Passwords do not match');
-      }
-    );
-  });
-
-  test.describe('edge cases', () => {
-    test(
-      'AUTH-E01: login trims leading and trailing spaces in username input @e2e @regression @safe',
-      async ({ authPage }) => {
-        await authPage.gotoLogin();
-        await authPage.login(accounts.edge.usernameWithSpaces, runtime.user.password);
         await authPage.assertLoggedInUiVisible();
       }
     );

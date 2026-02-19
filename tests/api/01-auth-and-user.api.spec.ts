@@ -22,25 +22,6 @@ test.describe('AUTHUSER :: API Auth And User', () => {
         expect(meBody.user.username).toBe(runtime.user.username);
       }
     );
-
-    test(
-      'AUTHUSER-P02: register can be followed by logout and login with new account @api @regression @destructive',
-      async ({ authApi }) => {
-        const account = buildUniqueAccount('api_authuser');
-
-        const registerResponse = await authApi.register(account.username, account.email, account.password);
-        expect(registerResponse.status()).toBe(201);
-
-        expect((await authApi.logout()).status()).toBe(200);
-
-        const loginResponse = await authApi.login(account.username, account.password);
-        expect(loginResponse.status()).toBe(200);
-
-        const loginBody = await loginResponse.json();
-        expect(loginBody.ok).toBe(true);
-        expect(loginBody.user.username).toBe(account.username);
-      }
-    );
   });
 
   test.describe('negative cases', () => {
@@ -89,6 +70,29 @@ test.describe('AUTHUSER :: API Auth And User', () => {
         const body = await response.json();
         expect(body.ok).toBe(true);
         expect(String(body.message || '').toLowerCase()).toContain('if the email exists');
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'AUTHUSER-P02: register can be followed by logout and login with new account @api @regression @destructive',
+      async ({ authApi }) => {
+        const account = buildUniqueAccount('api_authuser');
+
+        const registerResponse = await authApi.register(account.username, account.email, account.password);
+        expect(registerResponse.status()).toBe(201);
+
+        expect((await authApi.logout()).status()).toBe(200);
+
+        const loginResponse = await authApi.login(account.username, account.password);
+        expect(loginResponse.status()).toBe(200);
+
+        const loginBody = await loginResponse.json();
+        expect(loginBody.ok).toBe(true);
+        expect(loginBody.user.username).toBe(account.username);
       }
     );
   });

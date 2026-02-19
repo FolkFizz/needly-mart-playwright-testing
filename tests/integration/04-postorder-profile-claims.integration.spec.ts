@@ -13,32 +13,6 @@ test.describe('POSTPROFILECLAIMS :: Integration Post-Order Profile Claims', () =
     expect((await cartApi.clear()).status()).toBe(integrationData.status.ok);
   });
 
-  test.describe('positive cases', () => {
-    test(
-      'POSTPROFILECLAIMS-P01: newly created order appears in profile order history and invoice page @integration @regression @destructive',
-      async ({ cartApi, ordersApi, productsApi, request }) => {
-        const productId = await pickInStockProductId(productsApi);
-        const orderId = await createApprovedOrder({ cartApi, ordersApi, productId });
-
-        const profileOrdersResponse = await request.get(integrationData.routes.profileOrders, {
-          headers: { Accept: 'text/html' }
-        });
-        expect(profileOrdersResponse.status()).toBe(integrationData.status.ok);
-
-        const ordersHtml = await profileOrdersResponse.text();
-        expect(ordersHtml).toContain(`order-card-${orderId}`);
-
-        const invoiceResponse = await request.get(ROUTE.invoice(orderId), {
-          headers: { Accept: 'text/html' }
-        });
-        expect(invoiceResponse.status()).toBe(integrationData.status.ok);
-
-        const invoiceHtml = await invoiceResponse.text();
-        expect(invoiceHtml).toContain(orderId);
-      }
-    );
-  });
-
   test.describe('negative cases', () => {
     test(
       'POSTPROFILECLAIMS-N01: invoice route redirects unauthenticated request to login page @integration @regression @safe',
@@ -76,7 +50,33 @@ test.describe('POSTPROFILECLAIMS :: Integration Post-Order Profile Claims', () =
     );
   });
 
-  test.describe('edge cases', () => {
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'POSTPROFILECLAIMS-P01: newly created order appears in profile order history and invoice page @integration @regression @destructive',
+      async ({ cartApi, ordersApi, productsApi, request }) => {
+        const productId = await pickInStockProductId(productsApi);
+        const orderId = await createApprovedOrder({ cartApi, ordersApi, productId });
+
+        const profileOrdersResponse = await request.get(integrationData.routes.profileOrders, {
+          headers: { Accept: 'text/html' }
+        });
+        expect(profileOrdersResponse.status()).toBe(integrationData.status.ok);
+
+        const ordersHtml = await profileOrdersResponse.text();
+        expect(ordersHtml).toContain(`order-card-${orderId}`);
+
+        const invoiceResponse = await request.get(ROUTE.invoice(orderId), {
+          headers: { Accept: 'text/html' }
+        });
+        expect(invoiceResponse.status()).toBe(integrationData.status.ok);
+
+        const invoiceHtml = await invoiceResponse.text();
+        expect(invoiceHtml).toContain(orderId);
+      }
+    );
+
     test(
       'POSTPROFILECLAIMS-E01: claim with image evidence can be trashed restored and served as binary evidence @integration @regression @destructive',
       async ({ request }) => {

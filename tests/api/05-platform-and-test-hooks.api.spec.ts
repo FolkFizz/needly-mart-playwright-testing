@@ -55,19 +55,6 @@ test.describe('PLATFORMHOOKS :: API Platform And Test Hooks', () => {
 
   test.describe('edge cases', () => {
     test(
-      'PLATFORMHOOKS-E01: reset endpoint with configured key returns explicit success or production-blocked response @api @regression @destructive',
-      async ({ testHooksApi }) => {
-        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
-
-        const response = await testHooksApi.reset(runtime.testHooks.apiKey);
-        expect([200, 403]).toContain(response.status());
-
-        const body = await response.json().catch(() => ({}));
-        expect(String(body.message || body.ok || '')).not.toBe('');
-      }
-    );
-
-    test(
       'PLATFORMHOOKS-E02: stock-reset endpoint with configured key returns explicit behavior @api @regression @safe',
       async ({ request }) => {
         test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
@@ -80,6 +67,23 @@ test.describe('PLATFORMHOOKS :: API Platform And Test Hooks', () => {
           }
         });
 
+        expect([200, 403]).toContain(response.status());
+
+        const body = await response.json().catch(() => ({}));
+        expect(String(body.message || body.ok || '')).not.toBe('');
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'PLATFORMHOOKS-E01: reset endpoint with configured key returns explicit success or production-blocked response @api @regression @destructive',
+      async ({ testHooksApi }) => {
+        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
+
+        const response = await testHooksApi.reset(runtime.testHooks.apiKey);
         expect([200, 403]).toContain(response.status());
 
         const body = await response.json().catch(() => ({}));

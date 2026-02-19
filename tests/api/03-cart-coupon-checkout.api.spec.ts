@@ -26,31 +26,6 @@ test.describe('CARTCHECKOUT :: API Cart Coupon Checkout', () => {
         expect(Number(body.discountPercent)).toBe(20);
       }
     );
-
-    test(
-      'CARTCHECKOUT-P02: authorized payment token allows successful mock order placement @api @regression @destructive',
-      async ({ cartApi, ordersApi }) => {
-        expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
-
-        const authorizeResponse = await ordersApi.authorizeMockPayment(testCards.approved);
-        expect(authorizeResponse.status()).toBe(200);
-
-        const authorizeBody = await authorizeResponse.json();
-        expect(authorizeBody.ok).toBe(true);
-        expect(authorizeBody.status).toBe('approved');
-        expect(String(authorizeBody.token || '')).not.toBe('');
-
-        const orderResponse = await ordersApi.placeMockOrder({
-          paymentToken: String(authorizeBody.token),
-          ...checkoutForm.valid
-        });
-        expect(orderResponse.status()).toBe(200);
-
-        const orderBody = await orderResponse.json();
-        expect(orderBody.ok).toBe(true);
-        expect(String(orderBody.orderId || '')).toContain('ORD-');
-      }
-    );
   });
 
   test.describe('negative cases', () => {
@@ -116,6 +91,35 @@ test.describe('CARTCHECKOUT :: API Cart Coupon Checkout', () => {
 
         const body = await response.json();
         expect(body.ok).toBe(false);
+      }
+    );
+  });
+
+  test.describe('stateful/destructive cases (serial)', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test(
+      'CARTCHECKOUT-P02: authorized payment token allows successful mock order placement @api @regression @destructive',
+      async ({ cartApi, ordersApi }) => {
+        expect((await cartApi.add(products.apple.id, 1)).status()).toBe(200);
+
+        const authorizeResponse = await ordersApi.authorizeMockPayment(testCards.approved);
+        expect(authorizeResponse.status()).toBe(200);
+
+        const authorizeBody = await authorizeResponse.json();
+        expect(authorizeBody.ok).toBe(true);
+        expect(authorizeBody.status).toBe('approved');
+        expect(String(authorizeBody.token || '')).not.toBe('');
+
+        const orderResponse = await ordersApi.placeMockOrder({
+          paymentToken: String(authorizeBody.token),
+          ...checkoutForm.valid
+        });
+        expect(orderResponse.status()).toBe(200);
+
+        const orderBody = await orderResponse.json();
+        expect(orderBody.ok).toBe(true);
+        expect(String(orderBody.orderId || '')).toContain('ORD-');
       }
     );
   });

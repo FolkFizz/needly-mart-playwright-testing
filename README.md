@@ -93,6 +93,10 @@ AUTH-P01: login with valid credentials succeeds @smoke @e2e @safe
 | Risk | `@safe` `@destructive` |
 | Platform | `@mobile` |
 
+**Execution policy:**
+- `@safe` tests should stay independent and parallel-friendly.
+- `@destructive` tests must be grouped under `stateful/destructive cases (serial)` with `test.describe.configure({ mode: 'serial' })`.
+
 ---
 
 ## Getting Started
