@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { APIRequestContext, test as base, expect } from '@playwright/test';
 import { AuthApiClient } from '@api/clients/auth.client';
 import { CartApiClient } from '@api/clients/cart.client';
 import { DemoInboxApiClient } from '@api/clients/demo-inbox.client';
@@ -20,7 +20,6 @@ import { ProfilePage } from '@pages/profile.page';
 import { ProductPage } from '@pages/product.page';
 
 type TestFixtures = {
-  _serviceReady: void;
   authPage: AuthPage;
   catalogPage: CatalogPage;
   productPage: ProductPage;
@@ -42,6 +41,7 @@ type TestFixtures = {
 };
 
 type WorkerFixtures = {
+  _serviceReady: void;
   _workerUserReady: void;
 };
 
@@ -55,6 +55,90 @@ const parseMessage = (body: unknown): string => {
   if (!body || typeof body !== 'object') return '';
   const value = (body as Record<string, unknown>).message ?? (body as Record<string, unknown>).error;
   return String(value ?? '');
+};
+const toErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error ?? 'unknown error');
+};
+
+type ReadinessSnapshot = {
+  healthStatus: number | 'error';
+  healthReady: boolean;
+  healthError: string;
+  dbStatus: number | 'error';
+  dbReady: boolean;
+  dbState: string;
+  dbError: string;
+};
+
+const parseJsonBody = async (response: import('@playwright/test').APIResponse) =>
+  response.json().catch(() => ({} as Record<string, unknown>));
+
+const waitForServiceReadiness = async (request: APIRequestContext): Promise<void> => {
+  const maxAttempts = 12;
+  const retryDelayMs = 5_000;
+  const requestTimeoutMs = 10_000;
+  let last: ReadinessSnapshot | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let healthStatus: number | 'error' = 'error';
+    let healthReady = false;
+    let healthError = '';
+
+    try {
+      const healthResponse = await request.get('/health', {
+        headers: { Accept: 'application/json' },
+        timeout: requestTimeoutMs
+      });
+      healthStatus = healthResponse.status();
+      const healthBody = await parseJsonBody(healthResponse);
+      healthReady =
+        healthResponse.ok() &&
+        (healthBody.ok === true || String(healthBody.status || '').trim().toLowerCase() === 'up');
+    } catch (error) {
+      healthError = toErrorMessage(error);
+    }
+
+    let dbStatus: number | 'error' = 'error';
+    let dbReady = false;
+    let dbState = '';
+    let dbError = '';
+
+    try {
+      const dbResponse = await request.get('/health/db', {
+        headers: { Accept: 'application/json' },
+        timeout: requestTimeoutMs
+      });
+      dbStatus = dbResponse.status();
+      const dbBody = await parseJsonBody(dbResponse);
+      dbState = String(dbBody.db || '').trim().toLowerCase();
+      dbReady = dbResponse.status() === 200 && dbBody.ok === true && dbState === 'up';
+    } catch (error) {
+      dbError = toErrorMessage(error);
+    }
+
+    last = {
+      healthStatus,
+      healthReady,
+      healthError,
+      dbStatus,
+      dbReady,
+      dbState,
+      dbError
+    };
+
+    if (healthReady && dbReady) return;
+
+    if (attempt < maxAttempts) {
+      await delay(retryDelayMs);
+    }
+  }
+
+  throw new Error(
+    `[readiness] Service not ready after ${maxAttempts} attempts. ` +
+      `health(status=${last?.healthStatus ?? 'n/a'}, ready=${last?.healthReady ?? false}, error="${last?.healthError || '-'}"), ` +
+      `db(status=${last?.dbStatus ?? 'n/a'}, ready=${last?.dbReady ?? false}, state="${last?.dbState || '-'}", error="${last?.dbError || '-'}").`
+  );
 };
 
 const ensureWorkerUser = async (request: import('@playwright/test').APIRequestContext): Promise<void> => {
@@ -109,8 +193,22 @@ const ensureWorkerUser = async (request: import('@playwright/test').APIRequestCo
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
-  _workerUserReady: [
+  _serviceReady: [
     async ({ playwright }, use) => {
+      const request = await playwright.request.newContext({ baseURL: runtime.baseUrl });
+      try {
+        await waitForServiceReadiness(request);
+        await use();
+      } finally {
+        await request.dispose();
+      }
+    },
+    { scope: 'worker', auto: true, timeout: 120_000 }
+  ],
+  _workerUserReady: [
+    async ({ _serviceReady, playwright }, use) => {
+      void _serviceReady;
+
       if (!runtime.identity.autoProvisionUser) {
         await use();
         return;
@@ -125,33 +223,6 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
       }
     },
     { scope: 'worker', auto: true, timeout: 120_000 }
-  ],
-  _serviceReady: [
-    async ({ request }, use) => {
-      const maxAttempts = 12;
-      const retryDelayMs = 5_000;
-
-      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-        try {
-          const response = await request.get('/health', {
-            headers: { Accept: 'application/json' },
-            timeout: 10_000
-          });
-          if (response.ok()) break;
-        } catch {
-          // Retry until max attempts is reached.
-        }
-
-        if (attempt === maxAttempts) {
-          throw new Error('Service did not become ready before test execution.');
-        }
-
-        await delay(retryDelayMs);
-      }
-
-      await use();
-    },
-    { auto: true }
   ],
   authPage: async ({ page }, use) => {
     await use(new AuthPage(page));
