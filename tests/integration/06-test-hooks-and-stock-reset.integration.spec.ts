@@ -1,5 +1,4 @@
 import { runtime } from '@config/env';
-import { ROUTE } from '@config/routes';
 import { integrationData } from '@data/integration';
 import { products } from '@data/products';
 import { test, expect } from '@fixtures/test.base';
@@ -18,7 +17,7 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
     );
 
     test(
-      'TESTHOOKS-N02: set-stock endpoint is forbidden without api key @integration @regression @safe',
+      'TESTHOOKS-N02: set-stock endpoint is forbidden without required stock-reset key @integration @regression @safe',
       async ({ testHooksApi }) => {
         const response = await testHooksApi.setStock(products.apple.id, integrationData.testHooks.defaultStock);
         expect(response.status()).toBe(integrationData.status.forbidden);
@@ -33,12 +32,15 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
     test(
       'TESTHOOKS-E01: set-stock with configured key returns validation or access-control response for unknown product @integration @regression @safe',
       async ({ testHooksApi }) => {
-        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
+        test.skip(
+          !runtime.testHooks.stockResetApiKey,
+          'STOCK_RESET_API_KEY is not configured for this environment'
+        );
 
         const response = await testHooksApi.setStock(
           integrationData.testHooks.invalidProductId,
           integrationData.order.quantity.single,
-          runtime.testHooks.apiKey
+          runtime.testHooks.stockResetApiKey
         );
         expect([integrationData.status.notFound, integrationData.status.forbidden]).toContain(response.status());
       }
@@ -46,16 +48,16 @@ test.describe('TESTHOOKS :: Integration Test Hooks And Stock Reset', () => {
 
     test(
       'TESTHOOKS-E02: reset-stock endpoint with stock-reset key returns explicit response for invalid stock payload @integration @regression @safe',
-      async ({ request }) => {
-        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
+      async ({ testHooksApi }) => {
+        test.skip(
+          !runtime.testHooks.stockResetApiKey,
+          'STOCK_RESET_API_KEY is not configured for this environment'
+        );
 
-        const response = await request.post(ROUTE.testResetStock, {
-          data: { stock: integrationData.testHooks.invalidStock },
-          headers: {
-            Accept: 'application/json',
-            'x-stock-reset-key': runtime.testHooks.apiKey
-          }
-        });
+        const response = await testHooksApi.resetStock(
+          integrationData.testHooks.invalidStock,
+          runtime.testHooks.stockResetApiKey
+        );
 
         expect([integrationData.status.badRequest, integrationData.status.forbidden]).toContain(response.status());
       }

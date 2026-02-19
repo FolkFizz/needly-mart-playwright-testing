@@ -56,16 +56,13 @@ test.describe('PLATFORMHOOKS :: API Platform And Test Hooks', () => {
   test.describe('edge cases', () => {
     test(
       'PLATFORMHOOKS-E02: stock-reset endpoint with configured key returns explicit behavior @api @regression @safe',
-      async ({ request }) => {
-        test.skip(!runtime.testHooks.apiKey, 'TEST_API_KEY is not configured for this environment');
+      async ({ testHooksApi }) => {
+        test.skip(
+          !runtime.testHooks.stockResetApiKey,
+          'STOCK_RESET_API_KEY is not configured for this environment'
+        );
 
-        const response = await request.post('/api/test/reset-stock', {
-          data: { stock: 50 },
-          headers: {
-            Accept: 'application/json',
-            'x-test-api-key': runtime.testHooks.apiKey
-          }
-        });
+        const response = await testHooksApi.resetStock(50, runtime.testHooks.stockResetApiKey);
 
         expect([200, 403]).toContain(response.status());
 

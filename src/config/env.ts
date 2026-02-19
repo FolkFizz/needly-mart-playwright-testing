@@ -88,7 +88,8 @@ export const runtime = {
     autoProvisionUser: toBool(process.env.TEST_AUTO_PROVISION_USER, true)
   },
   testHooks: {
-    apiKey: pick('TEST_API_KEY', '')
+    apiKey: pick('TEST_API_KEY', ''),
+    stockResetApiKey: pick('STOCK_RESET_API_KEY', '')
   },
   timeouts: {
     test: toInt(process.env.TEST_TIMEOUT_MS, 45_000),
